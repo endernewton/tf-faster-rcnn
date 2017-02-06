@@ -8,7 +8,10 @@ We only tested it on VGG16 architecture so far. Our best performance as of Janua
   - Train on VOC 2017 trainval and test on VOC 2017 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **28.3**. 
 
-Note that the above numbers are obtained with a different testing scheme, the original testing scheme will result in slightly worse performance (see report). Since we keep the small proposals (\< 16pixels), our performance is especially good for small objects.
+Note that:
+  - The above numbers are obtained with a different testing scheme, the original testing scheme will result in slightly worse performance (see report). 
+  - Since we keep the small proposals (\< 16pixels), our performance is especially good for small objects.
+  - For coco, we find the performance improving with more iterations (790k), and potentially better performance can be achieved with even more iterations.
   
 ### Additional Features
 Additional features are added to make research life easier:
