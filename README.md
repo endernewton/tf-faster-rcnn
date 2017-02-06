@@ -89,24 +89,24 @@ The default number of training iteratsions are kept the same to the original fas
   tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
+  
 
 ### Citation
+If you find this implementation or the analysis conducted in our report helpful, please consider citing:
 
-Original faster RCNN citation:
+    @article{chen17implementation,
+        Author = {Xinlei Chen and Abhinav Gupta},
+        Title = {An Implementation of Faster RCNN with Study for Region Sampling},
+        Journal = {arXiv preprint arXiv:},
+        Year = {2017}
+    }
+    
+For convenience, here is the faster RCNN citation:
 
     @inproceedings{renNIPS15fasterrcnn,
         Author = {Shaoqing Ren and Kaiming He and Ross Girshick and Jian Sun},
         Title = {Faster {R-CNN}: Towards Real-Time Object Detection
                  with Region Proposal Networks},
         Booktitle = {Advances in Neural Information Processing Systems ({NIPS})},
-        Year = {2015}
-    }
-
-Technical report citation:
-
-    @article{chen17implementation,
-        Author = {Xinlei Chen and Abhinav Gupta},
-        Title = {},
-        Journal = {arXiv preprint arXiv:1506.01497},
         Year = {2015}
     }
