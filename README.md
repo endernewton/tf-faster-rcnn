@@ -25,11 +25,13 @@ Additional features are added to make research life easier:
   ```Shell
   git clone https://github.com/endernewton/tf-faster-rcnn.git
   ```
+  
 2. Build the Cython modules
   ```Shell
   cd tf-faster-rcnn/lib
   make
   ```
+  
 3. Download pre-trained models and weights
   ```Shell
   # return to the repository root
@@ -41,25 +43,54 @@ Additional features are added to make research life easier:
   # weights for imagenet pretrained model, extracted from released caffe model
   ./data/scripts/fetch_imagenet_weights.sh
   ```
-
+  
+Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a similified version.
+  
 ### Setup data
 Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets, which involves downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore those steps.
 
-If you find it useful, the ``cache`` folder created on my side is also shared [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz).
+If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
 ### Testing
-1. Create a folder and a softlink to use the pretrained model and extracted weights
+1. Create a folder and a softlink to use the pretrained model
+  ```Shell
+  mkdir -p output/vgg16/
+  ln -s data/faster_rcnn_models/voc_2007_trainval/ output/vgg16/
+  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival/ output/vgg16/
+  ```
 
-
-2. Test psacal voc.
+2. Test
+  ```Shell
+  GPU_ID=0
+  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
+  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
+  ```
+  
+It generally needs several GBs to test the pretrained model. 
 
 ### Training
+0. (Optional) If you have just tested the model, first remove the pretrained model
+  ```Shell
+  rm -v output/vgg16/voc_2007_trainval
+  rm -v output/vgg16/coco_2014_train+coco_2014_valminusminival
+  ```
+  
+1. Train
+  ```Shell
+  GPU_ID=0
+  ./experiments/scripts/vgg16.sh $GPU_ID pascal_voc
+  ./experiments/scripts/vgg16.sh $GPU_ID coco
+  ```
+  
+The default number of training iteratsions are kept the same to the original faster RCNN, however it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary, but in general it should be within 1% of the reported numbers.
 
-### 
+2. Visualization with tensorboard
+  ```Shell
+  tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
+  tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
+  ```
 
-## Citation
-
-
+### Citation
 
 Original faster RCNN citation:
 
@@ -71,3 +102,11 @@ Original faster RCNN citation:
         Year = {2015}
     }
 
+Technical report citation:
+
+    @article{chen17implementation,
+        Author = {Xinlei Chen and Abhinav Gupta},
+        Title = {},
+        Journal = {arXiv preprint arXiv:1506.01497},
+        Year = {2015}
+    }
