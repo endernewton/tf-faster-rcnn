@@ -45,7 +45,7 @@ set -x
 if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
   CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/test_vgg16_net.py \
     --imdb ${TEST_IMDB} \
-    --weight data/faster_rcnn_weights/vgg16.weights \
+    --weight data/imagenet_weights/vgg16.weights \
     --model ${NET_FINAL} \
     --cfg experiments/cfgs/vgg16.yml \
     --tag ${EXTRA_ARGS_SLUG} \
@@ -53,7 +53,7 @@ if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
 else
   CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/test_vgg16_net.py \
     --imdb ${TEST_IMDB} \
-    --weight data/faster_rcnn_weights/vgg16.weights \
+    --weight data/imagenet_weights/vgg16.weights \
     --model ${NET_FINAL} \
     --cfg experiments/cfgs/vgg16.yml \
     --set ${EXTRA_ARGS}
