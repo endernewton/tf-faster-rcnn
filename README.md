@@ -69,27 +69,26 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 It generally needs several GBs to test the pretrained model. 
 
 ### Training
-0. (Optional) If you have just tested the model, first remove the pretrained model
+1. (Optional) If you have just tested the model, first remove the pretrained model
   ```Shell
   rm -v output/vgg16/voc_2007_trainval
   rm -v output/vgg16/coco_2014_train+coco_2014_valminusminival
   ```
   
-1. Train
+2. Train
   ```Shell
   GPU_ID=0
   ./experiments/scripts/vgg16.sh $GPU_ID pascal_voc
   ./experiments/scripts/vgg16.sh $GPU_ID coco
   ```
-  
-The default number of training iteratsions are kept the same to the original faster RCNN, however it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary, but in general it should be within 1% of the reported numbers.
 
-2. Visualization with tensorboard
+3. Visualization with Tensorboard
   ```Shell
-  tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
-  tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
+  tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 
+  tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 
   ```
   
+The default number of training iteratsions are kept the same to the original faster RCNN, however it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary, but in general it should be within 1% of the reported numbers.
 
 ### Citation
 If you find this implementation or the analysis conducted in our report helpful, please consider citing:
