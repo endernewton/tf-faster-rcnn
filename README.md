@@ -75,7 +75,7 @@ It generally needs several GBs to test the pretrained model (4G on my side).
   rm -v output/vgg16/coco_2014_train+coco_2014_valminusminival
   ```
   
-2. Train
+2. Train (and test, evaluation)
   ```Shell
   GPU_ID=0
   ./experiments/scripts/vgg16.sh $GPU_ID pascal_voc
@@ -87,7 +87,26 @@ It generally needs several GBs to test the pretrained model (4G on my side).
   tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
-  
+
+By default, trained networks are saved under:
+
+```
+output/<network name>/<dataset name>/default/
+```
+
+Test outputs are saved under:
+
+```
+output/<network name>/<dataset name>/default/<network snapshot name>/
+```
+
+Tensorboard train and validation information is saved under:
+
+```
+tensorboard/<network name>/<dataset name>/default/
+tensorboard/<network name>/<dataset name>/default_val/
+```
+
 The default number of training iterations are kept the same to the original faster RCNN, however I find it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers.
 
 ### Citation
