@@ -66,7 +66,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_vgg16.sh $GPU_ID coco
   ```
   
-It generally needs several GBs to test the pretrained model. 
+It generally needs several GBs to test the pretrained model (4G on my side). 
 
 ### Training
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
@@ -88,7 +88,7 @@ It generally needs several GBs to test the pretrained model.
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
   
-The default number of training iteratsions are kept the same to the original faster RCNN, however it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary, but in general it should be within 1% of the reported numbers.
+The default number of training iterations are kept the same to the original faster RCNN, however I find it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers.
 
 ### Citation
 If you find this implementation or the analysis conducted in our report helpful, please consider citing:
