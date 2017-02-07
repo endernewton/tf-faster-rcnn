@@ -9,8 +9,8 @@ We only tested it on VGG16 architecture so far. Our best performance as of Janua
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **28.3**. 
 
 Note that:
-  - The above numbers are obtained with a different testing scheme, the original testing scheme will result in slightly worse performance (see report). 
-  - Since we keep the small proposals (\< 16pixels), our performance is especially good for small objects.
+  - The above numbers are obtained with a different testing scheme, the original testing scheme will result in slightly worse performance (see report). 
+  - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For coco, we find the performance improving with more iterations (790k), and potentially better performance can be achieved with even more iterations.
   
 ### Additional Features
@@ -21,7 +21,7 @@ Additional features are added to make research life easier:
 
 ### Prerequisites
   - A basic Tensorflow installation. r0.12 is fully tested. r0.10+ should in general be fine. For experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow).
-  - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to py-faster-rcnn).
+  - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
 
 ### Installation
 1. Clone the repository
