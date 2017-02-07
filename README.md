@@ -5,7 +5,7 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 
 ### Detection Performance
 We only tested it on VGG16 architecture so far. Our best performance as of January 2017:
-  - Train on VOC 2017 trainval and test on VOC 2017 test, **71.2**.
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **28.3**. 
 
 Note that:
