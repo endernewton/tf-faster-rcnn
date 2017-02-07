@@ -1,6 +1,5 @@
 # --------------------------------------------------------
 # Faster R-CNN
-# Copyright (c) 2017 Xinlei Chen
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick and Xinlei Chen
 # --------------------------------------------------------

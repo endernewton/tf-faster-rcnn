@@ -184,6 +184,13 @@ __C.TEST.RPN_POST_NMS_TOP_N = 300
 # Proposal height and width both need to be greater than RPN_MIN_SIZE (at orig image scale)
 # __C.TEST.RPN_MIN_SIZE = 16
 
+# Testing mode, default to be 'nms', 'top' is slower but better
+# See report for details
+__C.TEST.MODE = 'nms'
+
+# Only useful when TEST.MODE is 'top', specifies the number of top proposals to select
+__C.TEST.RPN_TOP_N = 4096
+
 #
 # MISC
 #
@@ -224,7 +231,7 @@ __C.USE_GPU_NMS = True
 # Default GPU device id
 __C.GPU_ID = 0
 
-# Default pooling mode, either 'roi' or 'crop'
+# Default pooling mode, only 'crop' is available
 __C.POOLING_MODE = 'crop'
 
 

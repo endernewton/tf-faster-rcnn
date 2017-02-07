@@ -14,6 +14,7 @@ import cPickle as pickle
 
 from layer_utils.snippets import generate_anchors_pre
 from layer_utils.proposal_layer import proposal_layer
+from layer_utils.proposal_top_layer import proposal_top_layer
 from layer_utils.anchor_target_layer import anchor_target_layer
 from layer_utils.proposal_target_layer import proposal_target_layer
 
@@ -190,6 +191,16 @@ class vgg16(object):
       return tf.reshape(reshaped_score, input_shape)
     return tf.nn.softmax(bottom, name=name)
 
+  def _proposal_top_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
+    with tf.variable_scope(name) as scope:
+      rois, rpn_scores = tf.py_func(proposal_top_layer,
+                                [rpn_cls_prob, rpn_bbox_pred, self._im_info, 
+                                self._feat_stride, self._anchors, self._anchor_scales], [tf.float32, tf.float32])
+      rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
+      rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
+
+    return rois, rpn_scores
+
   def _proposal_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_layer,
@@ -348,7 +359,12 @@ class vgg16(object):
         with tf.control_dependencies([rpn_labels]):
           rois, _ = self._proposal_target_layer(rois, roi_scores, "rpn_rois")
       else:
-        rois, _ = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+        if cfg.TEST.MODE == 'nms':
+          rois, _ = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+        elif cfg.TEST.MODE == 'top':
+          rois, _ = self._proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+        else:
+          raise NotImplementedError
 
       # rcnn
       if cfg.POOLING_MODE == 'crop':

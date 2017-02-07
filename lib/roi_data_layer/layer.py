@@ -30,6 +30,7 @@ class RoIDataLayer(object):
     """Randomly permute the training roidb."""
     # If the random flag is set, 
     # then the database is shuffled according to system time
+    # Useful for the validation set
     if self._random:
       st0 = np.random.get_state()
       millis = int(round(time.time() * 1000)) % 4294967295
