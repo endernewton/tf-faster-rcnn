@@ -4,12 +4,12 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which gives potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](http://arxiv.org/pdf/). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn).
 
 ### Detection Performance
-We only tested it on VGG16 architecture so far. Our best performance as of January 2017:
+We only tested it on plain VGG16 architecture so far. Our best performance as of January 2017 (no multi-scale, no multi-stage bounding box regression, no skip-connection):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **28.3**. 
 
 Note that:
-  - The above numbers are obtained with a different testing scheme, the original testing scheme will result in slightly worse performance (see report). 
+  - The above numbers are obtained with a different testing scheme without selecting region proposals using NMS, the original testing scheme will result in slightly worse performance (see report). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For coco, we find the performance improving with more iterations (790k), and potentially better performance can be achieved with even more iterations.
   
