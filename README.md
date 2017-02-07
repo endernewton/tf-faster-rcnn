@@ -9,7 +9,7 @@ We only tested it on plain VGG16 architecture so far. Our best performance as of
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **28.3**. 
 
 Note that:
-  - The above numbers are obtained with a different testing scheme without selecting region proposals using NMS, the original testing scheme will result in slightly worse performance (see report). 
+  - The above numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression, the original testing scheme will result in slightly worse performance (see report). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For coco, we find the performance improving with more iterations (790k), and potentially better performance can be achieved with even more iterations.
   
@@ -20,7 +20,7 @@ Additional features not mentioned in the report are added to make research life 
   - **Support for visualization**. The current implementation will summarize statistics of losses, activations and variables during training, and dump it to a separate folder for tensorboard visualization. The computing graph is also saved for debugging.
 
 ### Prerequisites
-  - A basic Tensorflow installation. r0.12 is fully tested. r0.10+ should in general be fine. For experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow).
+  - A basic Tensorflow installation. r0.12 is fully tested. r0.10+ should in general be fine. Though it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow).
   - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
 
 ### Installation
@@ -50,7 +50,7 @@ Additional features not mentioned in the report are added to make research life 
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a similified version.
   
 ### Setup data
-Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets, which involves downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore those steps.
+Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets, which involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
@@ -110,7 +110,7 @@ tensorboard/<network name>/<dataset name>/default/
 tensorboard/<network name>/<dataset name>/default_val/
 ```
 
-The default number of training iterations are kept the same to the original faster RCNN, however I find it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers.
+The default number of training iterations is kept the same to the original faster RCNN, however I find it is beneficial to train longer for COCO (see report). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers.
 
 ### Citation
 If you find this implementation or the analysis conducted in our report helpful, please consider citing:
