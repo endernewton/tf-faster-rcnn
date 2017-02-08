@@ -118,7 +118,7 @@ If you find this implementation or the analysis conducted in our report helpful,
     @article{chen17implementation,
         Author = {Xinlei Chen and Abhinav Gupta},
         Title = {An Implementation of Faster RCNN with Study for Region Sampling},
-        Journal = {arXiv preprint arXiv:},
+        Journal = {arXiv preprint arXiv:1702.02138},
         Year = {2017}
     }
     
