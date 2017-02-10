@@ -58,8 +58,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
   mkdir -p output/vgg16/
-  ln -s data/faster_rcnn_models/voc_2007_trainval/ output/vgg16/
-  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival/ output/vgg16/
+  ln -s data/faster_rcnn_models/voc_2007_trainval output/vgg16/
+  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/vgg16/
   ```
 
 2. Test
