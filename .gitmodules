@@ -1,3 +1,0 @@
-[submodule "data/coco"]
-	path = data/coco
-	url = https://github.com/pdollar/coco.git
