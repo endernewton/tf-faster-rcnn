@@ -1,7 +1,7 @@
 # tf-faster-rcnn
 A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (xinleic@cs.cmu.edu). This repository is based on the python Caffe implementation of faster RCNN available [here](https://github.com/rbgirshick/py-faster-rcnn).
 
-**Note**: Several minor modifications are made when reimplementing the framework, which gives potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
+**Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
 We only tested it on plain VGG16 architecture so far. Our best performance as of Feburary 2017 (single model on ``conv5_3``, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input):
@@ -11,7 +11,7 @@ We only tested it on plain VGG16 architecture so far. Our best performance as of
 Note that:
   - The above numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
-  - For COCO, we find the performance improving with more iterations (35k/49k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.3), and potentially better performance can be achieved with even more iterations. Check out [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/) for the latest model.
+  - For COCO, we find the performance improving with more iterations (350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.3), and potentially better performance can be achieved with even more iterations. Check out [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) for the latest models.
   
 COCO 2014 minival (900k/1190k):
 ```
