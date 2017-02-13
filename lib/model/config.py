@@ -189,7 +189,7 @@ __C.TEST.RPN_POST_NMS_TOP_N = 300
 __C.TEST.MODE = 'nms'
 
 # Only useful when TEST.MODE is 'top', specifies the number of top proposals to select
-__C.TEST.RPN_TOP_N = 4096
+__C.TEST.RPN_TOP_N = 5000
 
 #
 # MISC
