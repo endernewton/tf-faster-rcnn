@@ -54,20 +54,31 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
 ### Prerequisites
   - A basic Tensorflow installation. r0.12 is fully tested. r0.10+ should in general be fine. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
   - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
+  - A Docker image containing all of the required dependencies can be
+found in Docker hub at mbuckler/tf-faster-rcnn-deps. The Docker file
+used to create this image can be found in the docker directory of this
+repo.
 
 ### Installation
 1. Clone the repository
   ```Shell
   git clone https://github.com/endernewton/tf-faster-rcnn.git
   ```
-  
-2. Build the Cython modules
+
+2. Update your -arch in setup script to match your GPU
   ```Shell
   cd tf-faster-rcnn/lib
+  vim setup.py
+  ```
+
+3. Build the Cython modules
+  ```Shell
+  cd tf-faster-rcnn/lib
+  make clean
   make
   ```
   
-3. Download pre-trained models and weights
+4. Download pre-trained models and weights
   ```Shell
   # return to the repository root
   cd ..
@@ -81,6 +92,9 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
   
+5. Install the [Python COCO API](https://github.com/pdollar/coco). And
+	 create a symbolic link to it within tf-faster-rcnn/data 
+
 ### Setup data
 Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets. The steps involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
 
@@ -90,8 +104,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
   mkdir -p output/vgg16/
-  ln -s data/faster_rcnn_models/voc_2007_trainval/ output/vgg16/
-  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival/ output/vgg16/
+  ln -s data/faster_rcnn_models/voc_2007_trainval output/vgg16/
+  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/vgg16/
   ```
 
 2. Test
