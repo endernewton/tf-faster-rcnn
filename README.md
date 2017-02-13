@@ -28,14 +28,21 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   git clone https://github.com/endernewton/tf-faster-rcnn.git
   ```
-  
-2. Build the Cython modules
+
+2. Update your -arch in setup script to match your GPU
   ```Shell
   cd tf-faster-rcnn/lib
+  vim setup.py
+  ```
+
+3. Build the Cython modules
+  ```Shell
+  cd tf-faster-rcnn/lib
+  make clean
   make
   ```
   
-3. Download pre-trained models and weights
+4. Download pre-trained models and weights
   ```Shell
   # return to the repository root
   cd ..
@@ -49,7 +56,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
   
-4. Install the [Python COCO API](https://github.com/pdollar/coco). And
+5. Install the [Python COCO API](https://github.com/pdollar/coco). And
 	 create a symbolic link to it within tf-faster-rcnn/data 
 
 ### Setup data
