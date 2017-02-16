@@ -178,7 +178,7 @@ class vgg16(object):
       # change the channel to the caffe format
       to_caffe = tf.transpose(bottom, [0,3,1,2])
       # then force it to have channel 2
-      reshaped = tf.reshape(to_caffe, tf.concat(0, [[self._batch_size], [num_dim, -1], [input_shape[2]]]))
+      reshaped = tf.reshape(to_caffe, tf.concat(axis=0, values=[[self._batch_size], [num_dim, -1], [input_shape[2]]]))
       # then swap the channel back
       to_tf = tf.transpose(reshaped, [0,2,3,1])
       return to_tf
@@ -228,7 +228,7 @@ class vgg16(object):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      bboxes = tf.concat(1, [y1, x1, y2, x2])
+      bboxes = tf.concat(axis=1, values=[y1, x1, y2, x2])
       crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
 
     return slim.max_pool2d(crops, [2, 2], padding='SAME')
@@ -408,7 +408,7 @@ class vgg16(object):
     out_loss_box = bbox_outside_weights * in_loss_box
     loss_box = tf.reduce_mean(tf.reduce_sum(
                         out_loss_box, 
-                        reduction_indices=dim
+                        axis=dim
                 )) 
     return loss_box
 
@@ -420,7 +420,7 @@ class vgg16(object):
       rpn_select = tf.where(tf.not_equal(rpn_label,-1))
       rpn_cls_score = tf.reshape(tf.gather(rpn_cls_score, rpn_select),[-1,2])
       rpn_label = tf.reshape(tf.gather(rpn_label, rpn_select),[-1])
-      rpn_cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(rpn_cls_score, rpn_label))
+      rpn_cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=rpn_cls_score, labels=rpn_label))
 
       # RPN, bbox loss
       rpn_bbox_pred = self._predictions['rpn_bbox_pred']
@@ -433,7 +433,7 @@ class vgg16(object):
       # RCNN, class loss
       cls_score = self._predictions["cls_score"]
       label = tf.reshape(self._proposal_targets["labels"],[-1])
-      cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(cls_score, label))
+      cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=cls_score, labels=label))
 
       # RCNN, bbox loss
       bbox_pred = self._predictions['bbox_pred']
