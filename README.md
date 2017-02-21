@@ -94,8 +94,7 @@ repo.
   make
   ```
   
-4. Download pre-trained models and weights. **Note**: if you cannot download the models through the link. You can check out the following solutions:
-  - Another server from our group. Link [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/).
+4. Download pre-trained models and weights
   ```Shell
   # return to the repository root
   cd ..
@@ -106,8 +105,10 @@ repo.
   # weights for imagenet pretrained model, extracted from released caffe model
   ./data/scripts/fetch_imagenet_weights.sh
   ```
+  **Note**: if you cannot download the models through the link. You can check out the following solutions:
+  - Another server [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/).
 
-5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``. The code requires the API to access COCO.
+5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
 
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
 
