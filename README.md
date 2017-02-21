@@ -94,7 +94,8 @@ repo.
   make
   ```
   
-4. Download pre-trained models and weights
+4. Download pre-trained models and weights. **Note**: if you cannot download the models through the link. You can check out the following solutions:
+  - Another server from our group. Link [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/).
   ```Shell
   # return to the repository root
   cd ..
@@ -105,11 +106,10 @@ repo.
   # weights for imagenet pretrained model, extracted from released caffe model
   ./data/scripts/fetch_imagenet_weights.sh
   ```
-  
+
+5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``. The code requires the API to access COCO.
+
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
-  
-5. Install the [Python COCO API](https://github.com/pdollar/coco). And
-	 create a symbolic link to it within ``tf-faster-rcnn/data``
 
 ### Setup data
 Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets. The steps involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
