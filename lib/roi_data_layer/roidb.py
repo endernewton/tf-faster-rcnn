@@ -6,6 +6,9 @@
 # --------------------------------------------------------
 
 """Transform a roidb into a trainable roidb by adding a bunch of metadata."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import numpy as np
 from model.config import cfg
@@ -23,8 +26,8 @@ def prepare_roidb(imdb):
   roidb = imdb.roidb
   if not (imdb.name.startswith('vg') or imdb.name.startswith('avg') or imdb.name.startswith('coco')):
     sizes = [PIL.Image.open(imdb.image_path_at(i)).size
-         for i in xrange(imdb.num_images)]
-  for i in xrange(len(imdb.image_index)):
+         for i in range(imdb.num_images)]
+  for i in range(len(imdb.image_index)):
     roidb[i]['image'] = imdb.image_path_at(i)
     if not (imdb.name.startswith('vg') or imdb.name.startswith('avg') or imdb.name.startswith('coco')):
       roidb[i]['width'] = sizes[i][0]

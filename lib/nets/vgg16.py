@@ -3,6 +3,9 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen
 # --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -10,8 +13,11 @@ from tensorflow.contrib.slim import losses
 from tensorflow.contrib.slim import arg_scope
 
 import numpy as np
-import cPickle as pickle
 
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
 from layer_utils.snippets import generate_anchors_pre
 from layer_utils.proposal_layer import proposal_layer
 from layer_utils.proposal_top_layer import proposal_top_layer
@@ -20,15 +26,16 @@ from layer_utils.proposal_target_layer import proposal_target_layer
 
 from model.config import cfg
 
+
 class vgg16(object):
   def __init__(self, batch_size=1):
-    self._feat_stride = [16,]
-    self._feat_compress = [1./16.,]
+    self._feat_stride = [16, ]
+    self._feat_compress = [1. / 16., ]
     self._batch_size = batch_size
     self._predictions = {}
-    self._losses={}
-    self._anchor_targets={}
-    self._proposal_targets={}
+    self._losses = {}
+    self._anchor_targets = {}
+    self._proposal_targets = {}
     self._layers = {}
     self._act_summaries = []
     self._score_summaries = {}
@@ -39,7 +46,7 @@ class vgg16(object):
   def _add_act_summary(self, tensor):
     tf.summary.histogram('ACT/' + tensor.op.name + '/activations', tensor)
     tf.summary.scalar('ACT/' + tensor.op.name + '/zero_fraction',
-                    tf.nn.zero_fraction(tensor))
+                      tf.nn.zero_fraction(tensor))
 
   def _add_score_summary(self, key, tensor):
     tf.summary.histogram('SCORE/' + tensor.op.name + '/' + key + '/scores', tensor)
@@ -48,39 +55,40 @@ class vgg16(object):
     tf.summary.histogram('TRAIN/' + var.op.name, var)
 
   def _caffe_weights(self, layer_name):
-    layer=self._caffe_layers[layer_name]
-    return layer['weights']
+    layer = self._caffe_layers[layer_name]
+    return layer[b'weights']
 
   def _caffe_bias(self, layer_name):
-    layer=self._caffe_layers[layer_name]
-    return layer['bias']
+    layer = self._caffe_layers[layer_name]
+    return layer[b'bias']
 
   def _caffe2tf_filter(self, name):
-    f=self._caffe_weights(name)
+    f = self._caffe_weights(name)
     return f.transpose((2, 3, 1, 0))
 
   # Session is used to assign initial values, so that the big constant is not stored in the graph
   def _get_conv_filter(self, sess, name, trainable):
-    w=self._caffe2tf_filter(name)
-    phw=tf.placeholder(tf.float32, shape=w.shape)
-    conv=tf.get_variable("weight", initializer=phw, dtype=tf.float32, trainable=trainable)
+    w = self._caffe2tf_filter(name)
+    phw = tf.placeholder(tf.float32, shape=w.shape)
+    conv = tf.get_variable("weight", initializer=phw, dtype=tf.float32, trainable=trainable)
     sess.run(conv.initializer, feed_dict={phw: w})
     self._initialized.append(conv)
 
     return conv
 
   def _get_bias(self, sess, name, trainable):
-    b=self._caffe_bias(name)
+    b = self._caffe_bias(name)
     if name == "bbox_pred":
       stds = np.tile(np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS), (self._num_classes))
       means = np.tile(np.array(cfg.TRAIN.BBOX_NORMALIZE_MEANS), (self._num_classes))
       b -= means
       b /= stds
-    phb=tf.placeholder(tf.float32, shape=b.shape)
+    phb = tf.placeholder(tf.float32, shape=b.shape)
     if cfg.TRAIN.BIAS_DECAY:
       bias = tf.get_variable("bias", initializer=phb, dtype=tf.float32, trainable=trainable)
     else:
-      bias = tf.get_variable("bias", initializer=phb, regularizer=tf.no_regularizer, dtype=tf.float32, trainable=trainable)
+      bias = tf.get_variable("bias", initializer=phb, regularizer=tf.no_regularizer, dtype=tf.float32,
+                             trainable=trainable)
     sess.run(bias.initializer, feed_dict={phb: b})
     self._initialized.append(bias)
 
@@ -90,7 +98,7 @@ class vgg16(object):
     cw = self._caffe_weights(name)
     if name == "fc6":
       assert cw.shape == (4096, 25088)
-      cw = cw.reshape((4096, 512, 7, 7)) 
+      cw = cw.reshape((4096, 512, 7, 7))
       cw = cw.transpose((2, 3, 1, 0))
       cw = cw.reshape(25088, 4096)
     elif name == "bbox_pred":
@@ -99,23 +107,23 @@ class vgg16(object):
       cw /= stds
     else:
       cw = cw.transpose((1, 0))
-    phcw=tf.placeholder(tf.float32, shape=cw.shape)
+    phcw = tf.placeholder(tf.float32, shape=cw.shape)
     weight = tf.get_variable("weight", initializer=phcw, dtype=tf.float32, trainable=trainable)
     sess.run(weight.initializer, feed_dict={phcw: cw})
     self._initialized.append(weight)
-    
+
     return weight
 
   def _conv_layer(self, sess, bottom, name, trainable=True, padding='SAME', relu=True):
     with tf.variable_scope(name) as scope:
-      filt=self._get_conv_filter(sess, name, trainable=trainable)
-      conv_biases=self._get_bias(sess, name, trainable=trainable)
+      filt = self._get_conv_filter(sess, name, trainable=trainable)
+      conv_biases = self._get_bias(sess, name, trainable=trainable)
 
-      conv=tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding=padding)
-      bias=tf.nn.bias_add(conv, conv_biases)
+      conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding=padding)
+      bias = tf.nn.bias_add(conv, conv_biases)
 
       if relu:
-        bias=tf.nn.relu(bias)
+        bias = tf.nn.relu(bias)
       return bias
 
   def _fc_layer(self, sess, bottom, name, trainable=True, relu=True):
@@ -129,27 +137,30 @@ class vgg16(object):
       weight = self._get_fc_weight(sess, name, trainable=trainable)
       bias = self._get_bias(sess, name, trainable=trainable)
 
-      fc=tf.nn.bias_add(tf.matmul(x, weight), bias)
+      fc = tf.nn.bias_add(tf.matmul(x, weight), bias)
 
       if relu:
-        fc=tf.nn.relu(fc)
+        fc = tf.nn.relu(fc)
       return fc
 
-  def _conv_layer_shape(self, bottom, size, channels, name, initializer=None, trainable=True, padding='SAME', relu=True):
+  def _conv_layer_shape(self, bottom, size, channels, name, initializer=None, trainable=True, padding='SAME',
+                        relu=True):
     bottom_shape = bottom.get_shape().as_list()
-    size.extend([bottom_shape[3],channels])
+    size.extend([bottom_shape[3], channels])
     with tf.variable_scope(name) as scope:
-      filt=tf.get_variable('weight', size, initializer=initializer, trainable=trainable)
+      filt = tf.get_variable('weight', size, initializer=initializer, trainable=trainable)
       if cfg.TRAIN.BIAS_DECAY:
-        conv_biases=tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0), trainable=trainable)
+        conv_biases = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0),
+                                      trainable=trainable)
       else:
-        conv_biases=tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0), regularizer=tf.no_regularizer, trainable=trainable)
+        conv_biases = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0),
+                                      regularizer=tf.no_regularizer, trainable=trainable)
 
-      conv=tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding=padding)
-      bias=tf.nn.bias_add(conv, conv_biases)
+      conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding=padding)
+      bias = tf.nn.bias_add(conv, conv_biases)
 
       if relu:
-        bias=tf.nn.relu(bias)
+        bias = tf.nn.relu(bias)
       return bias
 
   def _fc_layer_shape(self, bottom, channels, name, initializer=None, trainable=True, relu=True):
@@ -162,25 +173,28 @@ class vgg16(object):
 
       weight = tf.get_variable('weight', [dim, channels], initializer=initializer, trainable=trainable)
       if cfg.TRAIN.BIAS_DECAY:
-        bias = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0), trainable=trainable)
+        bias = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0),
+                               trainable=trainable)
       else:
-        bias = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0), regularizer=tf.no_regularizer, trainable=trainable)
+        bias = tf.get_variable('bias', [channels], initializer=tf.constant_initializer(0.0),
+                               regularizer=tf.no_regularizer, trainable=trainable)
 
-      fc=tf.nn.bias_add(tf.matmul(x, weight), bias)
+      fc = tf.nn.bias_add(tf.matmul(x, weight), bias)
 
       if relu:
-        fc=tf.nn.relu(fc)
+        fc = tf.nn.relu(fc)
       return fc
 
   def _reshape_layer(self, bottom, num_dim, name):
     input_shape = tf.shape(bottom)
     with tf.variable_scope(name) as scope:
       # change the channel to the caffe format
-      to_caffe = tf.transpose(bottom, [0,3,1,2])
+      to_caffe = tf.transpose(bottom, [0, 3, 1, 2])
       # then force it to have channel 2
-      reshaped = tf.reshape(to_caffe, tf.concat(axis=0, values=[[self._batch_size], [num_dim, -1], [input_shape[2]]]))
+      reshaped = tf.reshape(to_caffe,
+                            tf.concat(axis=0, values=[[self._batch_size], [num_dim, -1], [input_shape[2]]]))
       # then swap the channel back
-      to_tf = tf.transpose(reshaped, [0,2,3,1])
+      to_tf = tf.transpose(reshaped, [0, 2, 3, 1])
       return to_tf
 
   def _softmax_layer(self, bottom, name):
@@ -194,8 +208,9 @@ class vgg16(object):
   def _proposal_top_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_top_layer,
-                                [rpn_cls_prob, rpn_bbox_pred, self._im_info, 
-                                self._feat_stride, self._anchors, self._anchor_scales], [tf.float32, tf.float32])
+                                    [rpn_cls_prob, rpn_bbox_pred, self._im_info,
+                                     self._feat_stride, self._anchors, self._anchor_scales],
+                                    [tf.float32, tf.float32])
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
 
@@ -204,8 +219,9 @@ class vgg16(object):
   def _proposal_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_layer,
-                                [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode, 
-                                self._feat_stride, self._anchors, self._anchor_scales], [tf.float32, tf.float32])
+                                    [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
+                                     self._feat_stride, self._anchors, self._anchor_scales],
+                                    [tf.float32, tf.float32])
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
 
@@ -215,9 +231,9 @@ class vgg16(object):
   def _roi_pool_layer(self, bootom, rois, name):
     with tf.variable_scope(name) as scope:
       return tf.image.roi_pooling(bootom, rois,
-                                    pooled_height=7,
-                                    pooled_width=7,
-                                    spatial_scale=1./16)[0]
+                                  pooled_height=7,
+                                  pooled_width=7,
+                                  spatial_scale=1. / 16)[0]
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
@@ -238,14 +254,15 @@ class vgg16(object):
 
   def _anchor_target_layer(self, rpn_cls_score, name):
     with tf.variable_scope(name) as scope:
-      rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(anchor_target_layer, 
-                          [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales], 
-                          [tf.float32, tf.float32, tf.float32, tf.float32])
+      rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(
+        anchor_target_layer,
+        [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales],
+        [tf.float32, tf.float32, tf.float32, tf.float32])
 
       rpn_labels.set_shape([1, 1, None, None])
-      rpn_bbox_targets.set_shape([1, None, None, self._num_scales*12])
-      rpn_bbox_inside_weights.set_shape([1, None, None, self._num_scales*12])
-      rpn_bbox_outside_weights.set_shape([1, None, None, self._num_scales*12])
+      rpn_bbox_targets.set_shape([1, None, None, self._num_scales * 12])
+      rpn_bbox_inside_weights.set_shape([1, None, None, self._num_scales * 12])
+      rpn_bbox_outside_weights.set_shape([1, None, None, self._num_scales * 12])
 
       rpn_labels = tf.to_int32(rpn_labels, name="to_int32")
       self._anchor_targets['rpn_labels'] = rpn_labels
@@ -259,16 +276,17 @@ class vgg16(object):
 
   def _proposal_target_layer(self, rois, roi_scores, name):
     with tf.variable_scope(name) as scope:
-      rois, roi_scores, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights = tf.py_func(proposal_target_layer, 
-                                        [rois, roi_scores, self._gt_boxes, self._num_classes], 
-                                        [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32])
+      rois, roi_scores, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights = tf.py_func(
+        proposal_target_layer,
+        [rois, roi_scores, self._gt_boxes, self._num_classes],
+        [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32])
 
       rois.set_shape([cfg.TRAIN.BATCH_SIZE, 5])
       roi_scores.set_shape([cfg.TRAIN.BATCH_SIZE])
       labels.set_shape([cfg.TRAIN.BATCH_SIZE, 1])
-      bbox_targets.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes*4])
-      bbox_inside_weights.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes*4])
-      bbox_outside_weights.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes*4])
+      bbox_targets.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes * 4])
+      bbox_inside_weights.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes * 4])
+      bbox_outside_weights.set_shape([cfg.TRAIN.BATCH_SIZE, self._num_classes * 4])
 
       self._proposal_targets['rois'] = rois
       self._proposal_targets['labels'] = tf.to_int32(labels, name="to_int32")
@@ -285,23 +303,24 @@ class vgg16(object):
       height = tf.to_int32(tf.ceil(self._im_info[0, 0] / 16.))
       width = tf.to_int32(tf.ceil(self._im_info[0, 1] / 16.))
       anchors, anchor_length = tf.py_func(generate_anchors_pre,
-                          [height, width, 
-                          self._feat_stride, self._anchor_scales], 
-                          [tf.float32, tf.int32], name="generate_anchors")
+                                          [height, width,
+                                           self._feat_stride, self._anchor_scales],
+                                          [tf.float32, tf.int32], name="generate_anchors")
       anchors.set_shape([None, 4])
       anchor_length.set_shape([])
       self._anchors = anchors
       self._anchor_length = anchor_length
 
   def _vgg16_from_imagenet(self, sess, train=True):
-    with tf.variable_scope('vgg16_' + self._tag, regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)) as scope:
+    with tf.variable_scope('vgg16_' + self._tag,
+                           regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)) as scope:
       # select initializers
       if cfg.TRAIN.TRUNCATED:
-        initializer=tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
-        initializer_bbox=tf.truncated_normal_initializer(mean=0.0, stddev=0.001)
+        initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
+        initializer_bbox = tf.truncated_normal_initializer(mean=0.0, stddev=0.001)
       else:
-        initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01)
-        initializer_bbox=tf.random_normal_initializer(mean=0.0, stddev=0.001)
+        initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
+        initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
       # first layer
       net = self._conv_layer(sess, self._image, "conv1_1", False)
       # self._act_summaries.append(net)
@@ -343,14 +362,16 @@ class vgg16(object):
       self._anchor_component()
 
       # rpn
-      rpn = self._conv_layer_shape(net, [3,3], 512, "rpn_conv/3x3", initializer, train)
+      rpn = self._conv_layer_shape(net, [3, 3], 512, "rpn_conv/3x3", initializer, train)
       self._act_summaries.append(rpn)
-      rpn_cls_score = self._conv_layer_shape(rpn, [1,1], self._num_scales * 6, "rpn_cls_score", initializer, train, 'VALID', False)
+      rpn_cls_score = self._conv_layer_shape(rpn, [1, 1], self._num_scales * 6, "rpn_cls_score", initializer,
+                                             train, 'VALID', False)
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, "rpn_cls_score_reshape")
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
       rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_scales * 6, "rpn_cls_prob")
-      rpn_bbox_pred = self._conv_layer_shape(rpn, [1,1], self._num_scales * 12, "rpn_bbox_pred", initializer, train, 'VALID', False)
+      rpn_bbox_pred = self._conv_layer_shape(rpn, [1, 1], self._num_scales * 12, "rpn_bbox_pred", initializer,
+                                             train, 'VALID', False)
 
       if train:
         rois, roi_scores = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
@@ -398,29 +419,30 @@ class vgg16(object):
       return rois, cls_prob, bbox_pred
 
   def _smooth_l1_loss(self, bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights, sigma=1.0, dim=[1]):
-    sigma_2 = sigma**2
+    sigma_2 = sigma ** 2
     box_diff = bbox_pred - bbox_targets
     in_box_diff = bbox_inside_weights * box_diff
     abs_in_box_diff = tf.abs(in_box_diff)
-    smoothL1_sign = tf.stop_gradient(tf.to_float(tf.less(abs_in_box_diff, 1./sigma_2)))
+    smoothL1_sign = tf.stop_gradient(tf.to_float(tf.less(abs_in_box_diff, 1. / sigma_2)))
     in_loss_box = tf.pow(in_box_diff, 2) * (sigma_2 / 2.0) * smoothL1_sign \
                   + (abs_in_box_diff - (0.5 / sigma_2)) * (1.0 - smoothL1_sign)
     out_loss_box = bbox_outside_weights * in_loss_box
     loss_box = tf.reduce_mean(tf.reduce_sum(
-                        out_loss_box, 
-                        axis=dim
-                )) 
+      out_loss_box,
+      axis=dim
+    ))
     return loss_box
 
   def _add_losses(self, sigma_rpn=3.0):
     with tf.variable_scope('vgg16-loss_' + self._tag) as scope:
       # RPN, class loss
-      rpn_cls_score = tf.reshape(self._predictions['rpn_cls_score_reshape'], [-1,2])
+      rpn_cls_score = tf.reshape(self._predictions['rpn_cls_score_reshape'], [-1, 2])
       rpn_label = tf.reshape(self._anchor_targets['rpn_labels'], [-1])
-      rpn_select = tf.where(tf.not_equal(rpn_label,-1))
-      rpn_cls_score = tf.reshape(tf.gather(rpn_cls_score, rpn_select),[-1,2])
-      rpn_label = tf.reshape(tf.gather(rpn_label, rpn_select),[-1])
-      rpn_cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=rpn_cls_score, labels=rpn_label))
+      rpn_select = tf.where(tf.not_equal(rpn_label, -1))
+      rpn_cls_score = tf.reshape(tf.gather(rpn_cls_score, rpn_select), [-1, 2])
+      rpn_label = tf.reshape(tf.gather(rpn_label, rpn_select), [-1])
+      rpn_cross_entropy = tf.reduce_mean(
+        tf.nn.sparse_softmax_cross_entropy_with_logits(logits=rpn_cls_score, labels=rpn_label))
 
       # RPN, bbox loss
       rpn_bbox_pred = self._predictions['rpn_bbox_pred']
@@ -428,12 +450,14 @@ class vgg16(object):
       rpn_bbox_inside_weights = self._anchor_targets['rpn_bbox_inside_weights']
       rpn_bbox_outside_weights = self._anchor_targets['rpn_bbox_outside_weights']
 
-      rpn_loss_box = self._smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights, sigma=sigma_rpn, dim=[1,2,3])
+      rpn_loss_box = self._smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights,
+                                          rpn_bbox_outside_weights, sigma=sigma_rpn, dim=[1, 2, 3])
 
       # RCNN, class loss
       cls_score = self._predictions["cls_score"]
-      label = tf.reshape(self._proposal_targets["labels"],[-1])
-      cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=cls_score, labels=label))
+      label = tf.reshape(self._proposal_targets["labels"], [-1])
+      cross_entropy = tf.reduce_mean(
+        tf.nn.sparse_softmax_cross_entropy_with_logits(logits=cls_score, labels=label))
 
       # RCNN, bbox loss
       bbox_pred = self._predictions['bbox_pred']
@@ -455,15 +479,15 @@ class vgg16(object):
 
     return loss
 
-  def create_architecture(self, sess, mode, num_classes, 
-                          caffe_weight_path=None, 
+  def create_architecture(self, sess, mode, num_classes,
+                          caffe_weight_path=None,
                           tag=None, anchor_scales=[8, 16, 32]):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
     self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
     self._gt_boxes = tf.placeholder(tf.float32, shape=[None, 5])
-    self._caffe_weight_path=caffe_weight_path
-    self._tag=tag
-    
+    self._caffe_weight_path = caffe_weight_path
+    self._tag = tag
+
     self._num_classes = num_classes
     self._mode = mode
     self._anchor_scales = anchor_scales
@@ -473,10 +497,18 @@ class vgg16(object):
     testing = mode == 'TEST'
 
     assert tag != None
-    print 'Loading caffe weights...'
-    with open(self._caffe_weight_path, 'r') as f:
-      self._caffe_layers = pickle.load(f)
-    print 'Done!'
+    print('Loading caffe weights...')
+    with open(self._caffe_weight_path, 'rb') as f:
+      try:
+        self._caffe_layers = pickle.load(f)
+      except:
+        weights_py2 = pickle.load(f, encoding='bytes')
+        weights_new = {}
+        for k, v in weights_py2.items():
+          k = k.decode('utf-8')
+          weights_new[k] = v
+        self._caffe_layers = weights_new
+    print('Done!')
 
     rois, cls_prob, bbox_pred = self._vgg16_from_imagenet(sess, training)
 
@@ -514,55 +546,54 @@ class vgg16(object):
 
   # only useful during testing mode
   def extract_conv5(self, sess, image):
-    feed_dict={self._image: image}
+    feed_dict = {self._image: image}
     feat = sess.run(self._layers["conv5_3"], feed_dict=feed_dict)
     return feat
 
   # only useful during testing mode
   def test_image(self, sess, image, im_info):
-    feed_dict={self._image: image,
-              self._im_info: im_info}
-    cls_score, cls_prob, bbox_pred, rois = sess.run([self._predictions["cls_score"], 
-                                                    self._predictions['cls_prob'], 
-                                                    self._predictions['bbox_pred'], 
-                                                    self._predictions['rois']], 
+    feed_dict = {self._image: image,
+                 self._im_info: im_info}
+    cls_score, cls_prob, bbox_pred, rois = sess.run([self._predictions["cls_score"],
+                                                     self._predictions['cls_prob'],
+                                                     self._predictions['bbox_pred'],
+                                                     self._predictions['rois']],
                                                     feed_dict=feed_dict)
     return cls_score, cls_prob, bbox_pred, rois
 
   def get_summary(self, sess, blobs):
-    feed_dict={self._image: blobs['data'], self._im_info: blobs['im_info'], \
-             self._gt_boxes: blobs['gt_boxes']}
+    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'], \
+                 self._gt_boxes: blobs['gt_boxes']}
     summary = sess.run(self._summary_op_val, feed_dict=feed_dict)
 
     return summary
 
   def train_step(self, sess, blobs, train_op):
-    feed_dict={self._image: blobs['data'], self._im_info: blobs['im_info'], \
-             self._gt_boxes: blobs['gt_boxes']}
-    rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss, _ = sess.run([self._losses["rpn_cross_entropy"], 
-                                                    self._losses['rpn_loss_box'], 
-                                                    self._losses['cross_entropy'], 
-                                                    self._losses['loss_box'],
-                                                    self._losses['total_loss'],
-                                                    train_op], 
-                                                    feed_dict=feed_dict)
+    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'],
+                 self._gt_boxes: blobs['gt_boxes']}
+    rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss, _ = sess.run([self._losses["rpn_cross_entropy"],
+                                                                        self._losses['rpn_loss_box'],
+                                                                        self._losses['cross_entropy'],
+                                                                        self._losses['loss_box'],
+                                                                        self._losses['total_loss'],
+                                                                        train_op],
+                                                                       feed_dict=feed_dict)
     return rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss
 
   def train_step_with_summary(self, sess, blobs, train_op):
-    feed_dict={self._image: blobs['data'], self._im_info: blobs['im_info'], \
-             self._gt_boxes: blobs['gt_boxes']}
-    rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss, summary, _ = sess.run([self._losses["rpn_cross_entropy"], 
-                                                    self._losses['rpn_loss_box'], 
-                                                    self._losses['cross_entropy'], 
-                                                    self._losses['loss_box'],
-                                                    self._losses['total_loss'],
-                                                    self._summary_op,
-                                                    train_op], 
-                                                    feed_dict=feed_dict)
+    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'],
+                 self._gt_boxes: blobs['gt_boxes']}
+    rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss, summary, _ = sess.run([self._losses["rpn_cross_entropy"],
+                                                                                 self._losses['rpn_loss_box'],
+                                                                                 self._losses['cross_entropy'],
+                                                                                 self._losses['loss_box'],
+                                                                                 self._losses['total_loss'],
+                                                                                 self._summary_op,
+                                                                                 train_op],
+                                                                                feed_dict=feed_dict)
     return rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, loss, summary
 
   def train_step_no_return(self, sess, blobs, train_op):
-    feed_dict={self._image: blobs['data'], self._im_info: blobs['im_info'], \
-             self._gt_boxes: blobs['gt_boxes']}
+    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'], \
+                 self._gt_boxes: blobs['gt_boxes']}
     sess.run([train_op], feed_dict=feed_dict)
-

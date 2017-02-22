@@ -3,19 +3,24 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick and Xinlei Chen
 # --------------------------------------------------------
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import numpy as np
 from model.config import cfg
 from model.bbox_transform import bbox_transform_inv, clip_boxes
 from model.nms_wrapper import nms
 
+
 def proposal_layer(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_stride, anchors, anchor_scales):
   """A simplified version compared to fast/er RCNN
      For details please see the technical report
   """
-  pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
+  if type(cfg_key) == bytes:
+      cfg_key = cfg_key.decode('utf-8')
+  pre_nms_topN = cfg[cfg_key].RPN_PRE_NMS_TOP_N
   post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
-  nms_thresh  = cfg[cfg_key].RPN_NMS_THRESH
+  nms_thresh = cfg[cfg_key].RPN_NMS_THRESH
 
   scales = np.array(anchor_scales)
   num_anchors = scales.shape[0] * 3
@@ -43,11 +48,9 @@ def proposal_layer(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_stride, 
     keep = keep[:post_nms_topN]
   proposals = proposals[keep, :]
   scores = scores[keep]
-  
+
   # Only support single image as input
   batch_inds = np.zeros((proposals.shape[0], 1), dtype=np.float32)
   blob = np.hstack((batch_inds, proposals.astype(np.float32, copy=False)))
 
   return blob, scores
-
-
