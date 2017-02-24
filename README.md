@@ -70,7 +70,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
 ### Prerequisites
   - A basic Tensorflow installation. r0.10+ should in general be fine **for training**, r0.12 is fully tested and recommended. The released model follows the r0.12 format. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
   - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
-  - A Docker image containing all of the required dependencies can be
+  - Docker users: A Docker image containing all of the required dependencies can be
 found in Docker hub at mbuckler/tf-faster-rcnn-deps. The Docker file
 used to create this image can be found in the docker directory of this
 repo.
