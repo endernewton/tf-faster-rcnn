@@ -152,7 +152,7 @@ __C.TRAIN.USE_ALL_GT = True
 #
 __C.TEST = edict()
 
-# Scale to use during training (can NOT list multiple scales)
+# Scale to use during testing (can NOT list multiple scales)
 # The scale is the pixel size of an image's shortest side
 __C.TEST.SCALES = (600,)
 
