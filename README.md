@@ -108,6 +108,7 @@ repo.
   ```
   **Note**: if you cannot download the models through the link. You can check out the following solutions:
   - Another server [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/).
+  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)
 
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
 
