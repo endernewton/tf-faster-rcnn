@@ -7,15 +7,22 @@ export PYTHONUNBUFFERED="True"
 
 GPU_ID=$1
 DATASET=$2
+NET=$3
 
 array=( $@ )
 len=${#array[@]}
-EXTRA_ARGS=${array[@]:2:$len}
+EXTRA_ARGS=${array[@]:3:$len}
 EXTRA_ARGS_SLUG=${EXTRA_ARGS// /_}
 
 case ${DATASET} in
   pascal_voc)
     TRAIN_IMDB="voc_2007_trainval"
+    TEST_IMDB="voc_2007_test"
+    STEPSIZE=50000
+    ITERS=70000
+    ;;
+  pascal_voc_0712)
+    TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
     STEPSIZE=50000
     ITERS=70000
@@ -32,37 +39,39 @@ case ${DATASET} in
     ;;
 esac
 
-LOG="experiments/logs/vgg16_${TRAIN_IMDB}_${EXTRA_ARGS_SLUG}_vgg16.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
+LOG="experiments/logs/${NET}_${TRAIN_IMDB}_${EXTRA_ARGS_SLUG}_${NET}.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
 set +x
 if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-    NET_FINAL=output/vgg16/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+    NET_FINAL=output/${NET}/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/${NET}_faster_rcnn_iter_${ITERS}.ckpt
 else
-    NET_FINAL=output/vgg16/${TRAIN_IMDB}/default/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+    NET_FINAL=output/${NET}/${TRAIN_IMDB}/default/${NET}_faster_rcnn_iter_${ITERS}.ckpt
 fi
 set -x
 
 if [ ! -f ${NET_FINAL}.index ]; then
     if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_vgg16_net.py \
-            --weight data/imagenet_weights/vgg_16.ckpt \
+        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
+            --weight data/imagenet_weights/${NET}.ckpt \
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
-            --cfg experiments/cfgs/vgg16.yml \
+            --cfg experiments/cfgs/${NET}.yml \
             --tag ${EXTRA_ARGS_SLUG} \
+            --net ${NET} \
             --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     else
-        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_vgg16_net.py \
-            --weight data/imagenet_weights/vgg_16.ckpt \
+        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
+            --weight data/imagenet_weights/${NET}.ckpt \
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
-            --cfg experiments/cfgs/vgg16.yml \
+            --cfg experiments/cfgs/${NET}.yml \
+            --net ${NET} \
             --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     fi
 fi
 
-./experiments/scripts/test_vgg16.sh $@
+./experiments/scripts/test_faster_rcnn.sh $@

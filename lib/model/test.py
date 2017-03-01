@@ -95,7 +95,9 @@ def im_detect(sess, net, im):
   _, scores, bbox_pred, rois = net.test_image(sess, blobs['data'], blobs['im_info'])
   
   boxes = rois[:, 1:5] / im_scales[0]
-
+  # print(scores.shape, bbox_pred.shape, rois.shape, boxes.shape)
+  scores = np.reshape(scores, [scores.shape[0], -1])
+  bbox_pred = np.reshape(bbox_pred, [bbox_pred.shape[0], -1])
   if cfg.TEST.BBOX_REG:
     # Apply bounding-box regression deltas
     box_deltas = bbox_pred

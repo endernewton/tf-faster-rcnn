@@ -20,6 +20,7 @@ import sys
 
 import tensorflow as tf
 from nets.vgg16 import vgg16
+from nets.res101 import Resnet101
 
 
 def parse_args():
@@ -32,7 +33,7 @@ def parse_args():
                       default=None, type=str)
   parser.add_argument('--weight', dest='weight',
                       help='initialize with pretrained model weights',
-                      default=None, type=str)
+                      type=str)
   parser.add_argument('--imdb', dest='imdb_name',
                       help='dataset to train on',
                       default='kitti_train', type=str)
@@ -45,6 +46,9 @@ def parse_args():
   parser.add_argument('--tag', dest='tag',
                       help='tag of the model',
                       default=None, type=str)
+  parser.add_argument('--net', dest='net',
+                      help='vgg16 or res101',
+                      default='res101', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                       help='set config keys', default=None,
                       nargs=argparse.REMAINDER)
@@ -116,9 +120,10 @@ if __name__ == '__main__':
   _, valroidb = combined_roidb(args.imdbval_name)
   print('{:d} validation roidb entries'.format(len(valroidb)))
   cfg.TRAIN.USE_FLIPPED = orgflip
-
-  net = vgg16(batch_size=cfg.TRAIN.IMS_PER_BATCH)
-
+  if args.net == 'vgg16':
+    net = vgg16(batch_size=cfg.TRAIN.IMS_PER_BATCH)
+  else:
+    net = Resnet101(batch_size=cfg.TRAIN.IMS_PER_BATCH)
   train_net(net, imdb, roidb, valroidb, output_dir, tb_dir,
             pretrained_model=args.weight,
             max_iters=args.max_iters)

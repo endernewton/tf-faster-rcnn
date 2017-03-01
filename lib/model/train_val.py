@@ -22,6 +22,7 @@ import glob
 import time
 
 import tensorflow as tf
+from tensorflow.python import pywrap_tensorflow
 
 
 class SolverWrapper(object):
@@ -79,6 +80,17 @@ class SolverWrapper(object):
 
     return filename, nfilename
 
+  def get_variables_in_checkpoint_file(self, file_name):
+    try:
+      reader = pywrap_tensorflow.NewCheckpointReader(file_name)
+      var_to_shape_map = reader.get_variable_to_shape_map()
+      return var_to_shape_map 
+    except Exception as e:  # pylint: disable=broad-except
+      print(str(e))
+      if "corrupted compressed block contents" in str(e):
+        print("It's likely that your checkpoint file has been compressed "
+              "with SNAPPY.")
+
   def train_model(self, sess, max_iters):
     # Build data layers for both training and validation set
     self.data_layer = RoIDataLayer(self.roidb, self.imdb.num_classes)
@@ -99,11 +111,11 @@ class SolverWrapper(object):
                                             tag='default', anchor_scales=anchors)
       # Define the loss
       loss = layers['total_loss']
-
       # Set learning rate and momentum
       lr = tf.Variable(cfg.TRAIN.LEARNING_RATE, trainable=False)
       momentum = cfg.TRAIN.MOMENTUM
       self.optimizer = tf.train.MomentumOptimizer(lr, momentum)
+
       # Compute the gradients wrt the loss
       gvs = self.optimizer.compute_gradients(loss)
       # Double the gradient of the bias if set
@@ -148,10 +160,17 @@ class SolverWrapper(object):
       # Fresh train directly from VGG weights
       print('Loading initial model weights from {:s}'.format(self.pretrained_model))
       variables = tf.global_variables()
+
       # Only initialize the variables that were not initialized when the graph was built
-      for vbs in self.net._initialized:
-        variables.remove(vbs)
       sess.run(tf.variables_initializer(variables, name='init'))
+      var_keep_dic = self.get_variables_in_checkpoint_file(self.pretrained_model)
+      variables_to_restore = []
+      # print(var_keep_dic)
+      for v in variables:
+          if v.name.split(':')[0] in var_keep_dic:
+              variables_to_restore.append(v)
+      restorer = tf.train.Saver(variables_to_restore)
+      restorer.restore(sess, self.pretrained_model)
       print('Loaded.')
       sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
       last_snapshot_iter = 0

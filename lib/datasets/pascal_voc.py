@@ -103,7 +103,6 @@ class pascal_voc(imdb):
     cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
     if os.path.exists(cache_file):
       with open(cache_file, 'rb') as fid:
-        roidb = pickle.load(fid)
         try:
           roidb = pickle.load(fid)
         except:
