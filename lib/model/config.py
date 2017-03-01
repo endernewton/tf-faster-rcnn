@@ -58,8 +58,8 @@ __C.TRAIN.SNAPSHOT_KEPT = 3
 # The time interval for saving tensorflow summaries
 __C.TRAIN.SUMMARY_INTERVAL = 180
 
-# Scales to use during training (can list multiple scales)
-# Each scale is the pixel size of an image's shortest side
+# Scale to use during training (can NOT list multiple scales)
+# The scale is the pixel size of an image's shortest side
 __C.TRAIN.SCALES = (600,)
 
 # Max pixel size of the longest side of a scaled input image
@@ -147,14 +147,17 @@ __C.TRAIN.RPN_BBOX_INSIDE_WEIGHTS = (1.0, 1.0, 1.0, 1.0)
 # and give negatives a weight of (1 - p)
 # Set to -1.0 to use uniform example weighting
 __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
+# Whether to use all ground truth bounding boxes for training, 
+# For COCO, setting USE_ALL_GT to False will exclude boxes that are flagged as ''iscrowd''
+__C.TRAIN.USE_ALL_GT = True
 
 #
 # Testing options
 #
 __C.TEST = edict()
 
-# Scales to use during testing (can list multiple scales)
-# Each scale is the pixel size of an image's shortest side
+# Scale to use during testing (can NOT list multiple scales)
+# The scale is the pixel size of an image's shortest side
 __C.TEST.SCALES = (600,)
 
 # Max pixel size of the longest side of a scaled input image
