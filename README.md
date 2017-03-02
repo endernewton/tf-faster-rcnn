@@ -68,16 +68,17 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 ### Testing
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
-  mkdir -p output/vgg16/
-  ln -s data/faster_rcnn_models/voc_2007_trainval output/vgg16/
-  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/vgg16/
+  NET=vgg16 or res101
+  mkdir -p output/${NET}/
+  ln -s data/faster_rcnn_models/voc_2007_trainval output/${NET}/
+  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/${NET}/
   ```
 
 2. Test
   ```Shell
-  /experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
-  ./experiments/scripts/test_vgg16.sh 0 pascal_voc vgg16
-  ./experiments/scripts/test_vgg16.sh 1 coco res101
+  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
+  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
+  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   # GPU_ID is the GPU you want to test on
   # NET in {vgg16, res101} is the network arch to use
   # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
@@ -88,8 +89,9 @@ It generally needs several GBs to test the pretrained model (4G on my side).
 ### Training 
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
   ```Shell
-  rm -v output/vgg16/voc_2007_trainval
-  rm -v output/vgg16/coco_2014_train+coco_2014_valminusminival
+  NET=vgg16 or res101
+  rm -v output/${NET}/voc_2007_trainval
+  rm -v output/${NET}/coco_2014_train+coco_2014_valminusminival
   ```
   
 2. Train (and test, evaluation)
