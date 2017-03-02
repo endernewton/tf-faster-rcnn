@@ -67,6 +67,21 @@ class Resnet101(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
 
+  def _crop_pool_layer(self, bottom, rois, name):
+    with tf.variable_scope(name) as scope:
+      batch_ids = tf.squeeze(tf.slice(rois, [0, 0], [-1, 1], name="batch_id"), [1])
+      height = tf.ceil(self._im_info[0, 0] / 16. - 1.) * 16.
+      width = tf.ceil(self._im_info[0, 1] / 16. - 1.) * 16.
+      x1 = tf.slice(rois, [0, 1], [-1, 1], name="x1") / width
+      y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
+      x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
+      y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
+      bboxes = tf.concat(axis=1, values=[y1, x1, y2, x2])
+      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
+
+      # Only return the crop without max-pool, since resnet101 does not max-pool before next layer
+    return crops
+
   def build_network(self, sess, is_training=True):
     # select initializers
     if cfg.TRAIN.TRUNCATED:
@@ -104,7 +119,7 @@ class Resnet101(Network):
     self._layers['conv5_3'] = net
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
-   # build the anchors for the image
+      # build the anchors for the image
       self._anchor_component()
 
       # rpn
