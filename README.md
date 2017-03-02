@@ -90,7 +90,7 @@ It generally needs several GBs to test the pretrained model.
 ### Training 
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
   ```Shell
-  NET=vgg16 or res101
+  NET=vgg16
   # NET in {vgg16, res101} is the network arch to use
   rm -v output/${NET}/voc_2007_trainval
   rm -v output/${NET}/coco_2014_train+coco_2014_valminusminival
