@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $DIR
 
 FILE=faster_rcnn_models.tgz
-URL=http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/$FILE
+URL=http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/$FILE
 CHECKSUM=865cdf7350a87ef41d6476e6e33b7212
 
 if [ -f $FILE ]; then

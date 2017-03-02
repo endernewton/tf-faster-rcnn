@@ -12,7 +12,7 @@ We only tested it on plain VGG16 and Resnet101 architecture so far. When using V
   - The above numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
-  - For COCO, we find the performance improving with more iterations (350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) for the latest models.
+  - For COCO, we find the performance improving with more iterations (350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) or ([here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)) for the latest models.
   
 COCO 2014 minival (900k/1190k):
 ```
@@ -119,8 +119,8 @@ repo.
   ./data/scripts/fetch_imagenet_weights.sh
   ```
   **Note**: if you cannot download the models through the link. You can check out the following solutions:
-  - Another server [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/).
-  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)
+  - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
+  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
 
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
 
@@ -129,7 +129,7 @@ Right now the imagenet weights are used to initialize layers for both training a
 ### Setup data
 Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets. The steps involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
 
-If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
+If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
 ### Testing
 1. Create a folder and a softlink to use the pretrained model
