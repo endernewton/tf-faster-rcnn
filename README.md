@@ -4,7 +4,7 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
+We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
@@ -55,7 +55,6 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
    
     Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models).
 
-
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
 
 Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
@@ -68,7 +67,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 ### Testing
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
-  NET=vgg16 or res101
+  NET=vgg16
+  # NET in {vgg16, res101} is the network arch to use
   mkdir -p output/${NET}/
   ln -s data/faster_rcnn_models/voc_2007_trainval output/${NET}/
   ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/${NET}/
@@ -76,32 +76,35 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 
 2. Test
   ```Shell
-  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
-  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
-  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
+  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
   # NET in {vgg16, res101} is the network arch to use
   # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
+  # Examples:
+  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
+  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   ```
   
-It generally needs several GBs to test the pretrained model (4G on my side). 
+It generally needs several GBs to test the pretrained model. 
 
 ### Training 
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
   ```Shell
   NET=vgg16 or res101
+  # NET in {vgg16, res101} is the network arch to use
   rm -v output/${NET}/voc_2007_trainval
   rm -v output/${NET}/coco_2014_train+coco_2014_valminusminival
   ```
   
 2. Train (and test, evaluation)
   ```Shell
-  ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
+  ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
+  # GPU_ID is the GPU you want to test on
+  # NET in {vgg16, res101} is the network arch to use
+  # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
+  # Examples:
   ./experiments/scripts/train_faster_rcnn.sh 0 pascal_voc vgg16
   ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
-  # GPU_ID is the GPU you want to train on
-  # NET in {vgg16, res101} is the network arch to use
-  # DATASET {pascal_voc, coco} is defined in train_faster_rcnn.sh
   ```
 
 3. Visualization with Tensorboard
