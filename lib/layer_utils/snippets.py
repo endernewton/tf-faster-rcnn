@@ -3,6 +3,9 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen
 # --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import numpy as np
 import numpy.random as npr
@@ -10,6 +13,7 @@ from model.config import cfg
 from layer_utils.generate_anchors import generate_anchors
 from model.bbox_transform import bbox_transform_inv, clip_boxes
 from utils.cython_bbox import bbox_overlaps
+
 
 def generate_anchors_pre(height, width, feat_stride, anchor_scales):
   """ A wrapper function to generate anchors given different scales

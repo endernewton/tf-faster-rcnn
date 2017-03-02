@@ -6,14 +6,16 @@
 # --------------------------------------------------------
 
 """Compute minibatch blobs for training a Fast R-CNN network."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import numpy as np
 import numpy.random as npr
 import cv2
 from model.config import cfg
 from utils.blob import prep_im_for_blob, im_list_to_blob
-import os
-import cPickle
+
 
 def get_minibatch(roidb, num_classes):
   """Given a roidb, construct a minibatch sampled from it."""
@@ -57,7 +59,7 @@ def _get_image_blob(roidb, scale_inds):
   num_images = len(roidb)
   processed_ims = []
   im_scales = []
-  for i in xrange(num_images):
+  for i in range(num_images):
     im = cv2.imread(roidb[i]['image'])
     if roidb[i]['flipped']:
       im = im[:, ::-1, :]

@@ -1,9 +1,10 @@
-*.c
-*.cpp
 *.so
 *.pyc
 output
+experiments/logs
+tensorboard
 lib/build
 lib/pycocotools
 lib/pycocotools/_mask.c
 lib/pycocotools/_mask.so
+.idea

@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import _init_paths
 from model.test import test_net
 from model.config import cfg, cfg_from_file, cfg_from_list
@@ -8,6 +12,7 @@ import time, os, sys
 
 import tensorflow as tf
 from nets.vgg16 import vgg16
+from nets.res101 import Resnet101
 
 def parse_args():
   """
@@ -33,6 +38,9 @@ def parse_args():
   parser.add_argument('--tag', dest='tag',
                         help='tag of the model',
                         default='', type=str)
+  parser.add_argument('--net', dest='net',
+                      help='vgg16 or res101',
+                      default='res101', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
@@ -78,7 +86,10 @@ if __name__ == '__main__':
   # init session
   sess = tf.Session(config=tfconfig)
   # load network
-  net = vgg16(batch_size=1)
+  if args.net == 'vgg16':
+    net = vgg16(batch_size=1)
+  else:
+    net = Resnet101(batch_size=1)
   # load model
   if imdb.name.startswith('voc'):
     anchors = [8, 16, 32]
@@ -89,14 +100,14 @@ if __name__ == '__main__':
                           tag='default', anchor_scales=anchors)
 
   if args.model:
-    print ('Loading model check point from {:s}').format(args.model)
+    print(('Loading model check point from {:s}').format(args.model))
     saver = tf.train.Saver()
     saver.restore(sess, args.model)
-    print 'Loaded.'
+    print('Loaded.')
   else:
-    print ('Loading initial weights from {:s}').format(args.weight)
+    print(('Loading initial weights from {:s}').format(args.weight))
     sess.run(tf.global_variables_initializer())
-    print 'Loaded.'
+    print('Loaded.')
 
   test_net(sess, net, imdb, filename, max_per_image=args.max_per_image)
 
