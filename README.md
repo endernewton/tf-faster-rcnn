@@ -19,6 +19,7 @@ With Resnet101 (last ``conv4`` layer):
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) or ([here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)) for the latest models.
+  - For PASCAL VOC, check out [here](https://drive.google.com/drive/folders/0B2Zdmaho7pB7dXJORFRaRmhjVFU?usp=sharing)  for the latest models.
 
 ### Additional Features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
@@ -51,19 +52,9 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```
   
 4. Download pre-trained models and weights
-  ```Shell
-  # return to the repository root
-  cd ..
-  # model for both voc and coco using default training scheme
-  ./data/scripts/fetch_faster_rcnn_models.sh
-  # model for coco using longer training scheme (600k/790k)
-  ./data/scripts/fetch_coco_long_models.sh
-  # weights for imagenet pretrained model, extracted from released caffe model
-  ./data/scripts/fetch_imagenet_weights.sh
-  ```
-  **Note**: if you cannot download the models through the link. You can check out the following solutions:
-  - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
-  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
+   
+    Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models).
+
 
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
 
@@ -74,35 +65,43 @@ Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgir
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
-### Testing (VGG16)
+### Testing
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
-  mkdir -p output/vgg16/
-  ln -s data/faster_rcnn_models/voc_2007_trainval output/vgg16/
-  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/vgg16/
+  NET=vgg16 or res101
+  mkdir -p output/${NET}/
+  ln -s data/faster_rcnn_models/voc_2007_trainval output/${NET}/
+  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/${NET}/
   ```
 
 2. Test
   ```Shell
-  GPU_ID=0
-  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
-  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
+  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
+  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
+  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
+  # GPU_ID is the GPU you want to test on
+  # NET in {vgg16, res101} is the network arch to use
+  # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
   ```
   
 It generally needs several GBs to test the pretrained model (4G on my side). 
 
-### Training (VGG16)
+### Training 
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
   ```Shell
-  rm -v output/vgg16/voc_2007_trainval
-  rm -v output/vgg16/coco_2014_train+coco_2014_valminusminival
+  NET=vgg16 or res101
+  rm -v output/${NET}/voc_2007_trainval
+  rm -v output/${NET}/coco_2014_train+coco_2014_valminusminival
   ```
   
 2. Train (and test, evaluation)
   ```Shell
-  GPU_ID=0
-  ./experiments/scripts/vgg16.sh $GPU_ID pascal_voc
-  ./experiments/scripts/vgg16.sh $GPU_ID coco
+  ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET] 
+  ./experiments/scripts/train_faster_rcnn.sh 0 pascal_voc vgg16
+  ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
+  # GPU_ID is the GPU you want to train on
+  # NET in {vgg16, res101} is the network arch to use
+  # DATASET {pascal_voc, coco} is defined in train_faster_rcnn.sh
   ```
 
 3. Visualization with Tensorboard
