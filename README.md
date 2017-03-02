@@ -4,75 +4,21 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 architecture so far. When using VGG16, our best performance as of Feburary 2017 (single model on ``conv5_3``, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input, only left-right flipping during training for data augmentation):
+We only tested it on plain VGG16 and Resnet101 architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
+
+With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
+  
+With Resnet101 (last ``conv4`` layer):
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.1**.
+  - Train on VOC 2007 trainval + VOC 2012 trainval and test on VOC 2007 test, **77.8**. 
 
 **Note**:
   - The above numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
-  - For COCO, we find the performance improving with more iterations (350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) or ([here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)) for the latest models.
-  
-COCO 2014 minival (900k/1190k):
-```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.295
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.503
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.309
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.125
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.333
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.438
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.272
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.396
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.405
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.184
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.458
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.592
-```
-
-COCO 2015 test-dev (900k/1190k):
-```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.297
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.504
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.128
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.325
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.421
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.272
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.399
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.187
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.451
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.591
- ```
- 
- COCO 2015 test-std (900k/1190k):
- ```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.295
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.501
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.119
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.327
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.418
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.273
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.400
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.179
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.455
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.586
- ```
- 
-When using Resnet101, our best performance as of Feburary 2017 (single model on the last layer of the ``conv4`` block, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input, only left-right flipping during training for data augmentation): 
- 
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **0.741**.
-  - Train on VOC 2007 trainval + VOC 2012 trainval and test on VOC 2007 test, **0.778**. 
-
-
-|method| data| mAP |areo| bike |bird |boat | bottle| bus |car |cat |chair |cow |table |dog |horse |mbike | person| plant |sheep |sofa |train |tv|
-| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----|
-|Faster R-CNN|07|0.74|0.71|0.80|0.7|6.61|0.59|0.79|0.80|0.86|0.58|0.76|0.71|0.86|0.85|0.79|0.79|0.48|0.76|0.79|0.79|0.79|0.74|
-|Faster R-CNN|07+12|0.78|0.80|0.85|0.78|0.68|0.63|0.87|0.87|0.89|0.63|0.83|0.73|0.87|0.87|0.80|0.79|0.47|0.77|0.79|0.85|0.76|
-
+  - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) or ([here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)) for the latest models.
 
 ### Additional Features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
@@ -81,12 +27,9 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   - **Support for visualization**. The current implementation will summarize statistics of losses, activations and variables during training, and dump it to a separate folder for tensorboard visualization. The computing graph is also saved for debugging.
 
 ### Prerequisites
-  - A basic Tensorflow installation. r0.10+ should in general be fine **for training**, r0.12 is fully tested and recommended. The released model follows the r0.12 format. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
+  - A basic Tensorflow installation. The code follows **r1.0** format now. The released model follows the r0.12 format. If you are using an order version (r0.1-r0.12), please check out the v0.12 release. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
   - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
-  - Docker users: A Docker image containing all of the required dependencies can be
-found in Docker hub at mbuckler/tf-faster-rcnn-deps. The Docker file
-used to create this image can be found in the docker directory of this
-repo.
+  - Docker users: A Docker image containing all of the required dependencies can be found in Docker hub at mbuckler/tf-faster-rcnn-deps. The Docker file used to create this image can be found in the docker directory of this repository.
 
 ### Installation
 1. Clone the repository
@@ -131,7 +74,7 @@ Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgir
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
-### Testing
+### Testing (VGG16)
 1. Create a folder and a softlink to use the pretrained model
   ```Shell
   mkdir -p output/vgg16/
@@ -148,7 +91,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   
 It generally needs several GBs to test the pretrained model (4G on my side). 
 
-### Training
+### Training (VGG16)
 1. (Optional) If you have just tested the model, first remove the link to the pretrained model
   ```Shell
   rm -v output/vgg16/voc_2007_trainval
@@ -209,3 +152,36 @@ For convenience, here is the faster RCNN citation:
         Year = {2015}
     }
 
+### Detailed Numbers
+
+VGG16 COCO 2015 test-dev (900k/1190k):
+```
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.297
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.504
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.128
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.325
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.421
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.272
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.399
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.187
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.451
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.591
+ ```
+ 
+VGG16 COCO 2015 test-std (900k/1190k):
+ ```
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.295
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.501
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.119
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.327
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.418
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.273
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.400
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.179
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.455
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.586
+ ```
