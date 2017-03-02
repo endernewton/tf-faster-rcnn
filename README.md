@@ -4,10 +4,10 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 architecture so far. Our best performance as of Feburary 2017 (single model on ``conv5_3``, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input, only left-right flipping during training for data augmentation):
+We only tested it on plain VGG16 and Resnet101 architecture so far. When using VGG16, our best performance as of Feburary 2017 (single model on ``conv5_3``, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input, only left-right flipping during training for data augmentation):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
-  
+
 **Note**:
   - The above numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
@@ -61,7 +61,19 @@ COCO 2015 test-dev (900k/1190k):
  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.455
  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.586
  ```
-  
+ 
+When using Resnet101, our best performance as of Feburary 2017 (single model on the last layer of the ``conv4`` block, no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input, only left-right flipping during training for data augmentation): 
+ 
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **0.741**.
+  - Train on VOC 2007 trainval + VOC 2012 trainval and test on VOC 2007 test, **0.778**. 
+
+
+|method| data| mAP |areo| bike |bird |boat | bottle| bus |car |cat |chair |cow |table |dog |horse |mbike | person| plant |sheep |sofa |train |tv|
+| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----| ----|
+|Faster R-CNN|07|0.74|0.71|0.80|0.7|6.61|0.59|0.79|0.80|0.86|0.58|0.76|0.71|0.86|0.85|0.79|0.79|0.48|0.76|0.79|0.79|0.79|0.74|
+|Faster R-CNN|07+12|0.78|0.80|0.85|0.78|0.68|0.63|0.87|0.87|0.89|0.63|0.83|0.73|0.87|0.87|0.80|0.79|0.47|0.77|0.79|0.85|0.76|
+
+
 ### Additional Features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
   - **Support for train-and-validation**. During training, the validation data will also be tested from time to time to monitor the process and check potential overfitting. Ideally training and validation should be separate, where the model is loaded everytime to test on validation. However I have implemented it in a joint way to save time and GPU memory. Though in the default setup the testing data is used for validation, no special attempts is made to overfit on testing set.
@@ -196,3 +208,4 @@ For convenience, here is the faster RCNN citation:
         Booktitle = {Advances in Neural Information Processing Systems ({NIPS})},
         Year = {2015}
     }
+

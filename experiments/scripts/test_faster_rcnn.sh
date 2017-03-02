@@ -23,7 +23,7 @@ case ${DATASET} in
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
-    ITERS=25000
+    ITERS=70000
     ;;
   coco)
     TRAIN_IMDB="coco_2014_train+coco_2014_valminusminival"
