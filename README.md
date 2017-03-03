@@ -19,7 +19,7 @@ With Resnet101 (experimental, last ``conv4`` layer):
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/) or ([here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ)) for the latest models.
-  - For PASCAL VOC, check out [here](https://drive.google.com/drive/folders/0B2Zdmaho7pB7dXJORFRaRmhjVFU?usp=sharing)  for the latest models.
+  - For Resnet101 on PASCAL VOC, check out [here](https://drive.google.com/drive/folders/0B2Zdmaho7pB7dXJORFRaRmhjVFU?usp=sharing) for the latest models.
 
 ### Additional Features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
@@ -42,11 +42,11 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   cd tf-faster-rcnn/lib
   vim setup.py
+  # Check the GPU architecture, if you are using Maxwell arch, please switch to sm_61
   ```
 
 3. Build the Cython modules
   ```Shell
-  cd tf-faster-rcnn/lib
   make clean
   make
   ```
