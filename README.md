@@ -52,13 +52,23 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   cd ..
   ```
   
-4. Download pre-trained models and weights. Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for the VGG16 model, you can set up it like:
+4. Download pre-trained models and weights. Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for VGG16 model, you can set up like:
    ```Shell
    mkdir -p data/imagenet_weights
    cd data/imagenet_weights
    wget -v http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz
    tar -xzvf vgg_16_2016_08_28.tar.gz
-   cd ..
+   mv vgg_16.ckpt vgg16.ckpt
+   cd ../..
+   ```
+ For Resnet101, you can set up like:
+   ```Shell
+   mkdir -p data/imagenet_weights
+   cd data/imagenet_weights
+   wget -v http://download.tensorflow.org/models/resnet_v1_101_2016_08_28.tar.gz
+   tar -xzvf resnet_v1_101_2016_08_28.tar.gz
+   mv resnet_v1_101.ckpt res101.ckpt
+   cd ../..
    ```
 
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
@@ -91,7 +101,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   cd output/${NET}
   ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
   ln -s ../../data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival ./
-  cd ../../
+  cd ../..
   ```
 
 3. Test with pre-trained VGG16 models
