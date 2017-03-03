@@ -138,7 +138,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   ```
   
-5. You can use tools/reval.sh for re-evaluation
+5. You can use ``tools/reval.sh`` for re-evaluation
 
 
 By default, trained networks are saved under:
