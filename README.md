@@ -49,46 +49,57 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   make clean
   make
+  cd ..
   ```
   
-4. Download pre-trained models and weights
-   
-    Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models).
+4. Download pre-trained models and weights. Pre-trained models is provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for the VGG16 model, you can set up it like:
+   ```Shell
+   mkdir -p data/imagenet_weights
+   cd data/imagenet_weights
+   wget -v http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz
+   tar -xzvf vgg_16_2016_08_28.tar.gz
+   cd ..
+   ```
 
 5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
-
-Right now the imagenet weights are used to initialize layers for both training and testing to build the graph, despite that for testing it will later restore trained tensorflow models. This step can be removed in a simplified version.
 
 ### Setup data
 Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets. The steps involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
-### Testing
-1. Create a folder and a softlink to use the pretrained model
+### Test with pre-trained models
+1. Download pre-trained models and weights (VGG16)
+  ```Shell
+  # return to the repository root
+  cd ..
+  # VGG16 for both voc and coco using default training scheme
+  ./data/scripts/fetch_faster_rcnn_models.sh
+  # VGG16 for coco using longer training scheme (600k/790k)
+  ./data/scripts/fetch_coco_long_models.sh
+  # (Optional) weights for imagenet pretrained model, extracted from released caffe model
+  ./data/scripts/fetch_imagenet_weights.sh
+  ```
+  **Note**: if you cannot download the models through the link. You can check out the following solutions:
+  - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
+  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
+
+2. Create a folder and a softlink to use the pretrained model
   ```Shell
   NET=vgg16
-  # NET in {vgg16, res101} is the network arch to use
-  mkdir -p output/${NET}/
   ln -s data/faster_rcnn_models/voc_2007_trainval output/${NET}/
   ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/${NET}/
   ```
 
-2. Test
+3. Test with pre-trained VGG16 models
   ```Shell
-  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
-  # GPU_ID is the GPU you want to test on
-  # NET in {vgg16, res101} is the network arch to use
-  # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
-  # Examples:
-  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
-  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
+  GPU_ID=0
+  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
+  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
   ```
-  
-It generally needs several GBs to test the pretrained model. 
 
-### Training 
-1. (Optional) If you have just tested the model, first remove the link to the pretrained model
+### Train your own model 
+1. (Optional) If you have just tested the models, first remove the link to the pre-trained models
   ```Shell
   NET=vgg16
   # NET in {vgg16, res101} is the network arch to use
@@ -112,24 +123,35 @@ It generally needs several GBs to test the pretrained model.
   tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
+  
+4. Test
+  ```Shell
+  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
+  # GPU_ID is the GPU you want to test on
+  # NET in {vgg16, res101} is the network arch to use
+  # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
+  # Examples:
+  ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
+  ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
+  ```
 
 By default, trained networks are saved under:
 
 ```
-output/<network name>/<dataset name>/default/
+output/[NET]/[DATASET]/default/
 ```
 
 Test outputs are saved under:
 
 ```
-output/<network name>/<dataset name>/default/<network snapshot name>/
+output/[NET]/[DATASET]/default/[SNAPSHOT]/
 ```
 
 Tensorboard information for train and validation is saved under:
 
 ```
-tensorboard/<network name>/<dataset name>/default/
-tensorboard/<network name>/<dataset name>/default_val/
+tensorboard/[NET]/[DATASET]/default/
+tensorboard/[NET]/[DATASET]/default_val/
 ```
 
 The default number of training iterations is kept the same to the original faster RCNN, however I find it is beneficial to train longer for COCO (see [report](https://arxiv.org/pdf/1702.02138.pdf)). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers. Solutions are welcome.
