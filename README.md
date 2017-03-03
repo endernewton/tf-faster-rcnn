@@ -77,7 +77,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./data/scripts/fetch_faster_rcnn_models.sh
   # VGG16 for coco using longer training scheme (600k/790k)
   ./data/scripts/fetch_coco_long_models.sh
-  # (Optional) weights for imagenet pretrained model, extracted from released caffe model
+  # VGG16 weights for imagenet pretrained model, extracted from released caffe model
   ./data/scripts/fetch_imagenet_weights.sh
   ```
   **Note**: if you cannot download the models through the link. You can check out the following solutions:
