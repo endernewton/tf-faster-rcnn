@@ -87,8 +87,11 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 2. Create a folder and a softlink to use the pretrained model
   ```Shell
   NET=vgg16
-  ln -s data/faster_rcnn_models/voc_2007_trainval output/${NET}/
-  ln -s data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival output/${NET}/
+  mkdir -p output/${NET}
+  cd output/${NET}
+  ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
+  ln -s ../../data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival ./
+  cd ../../
   ```
 
 3. Test with pre-trained VGG16 models
