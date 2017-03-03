@@ -128,8 +128,9 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```
   
 4. Test and evaluate
+
   ```Shell
-  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
+  ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
   # NET in {vgg16, res101} is the network arch to use
   # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
@@ -138,7 +139,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   ```
   
-5. You can use ``./tools/reval.sh`` for re-evaluation
+5. You can use ``tools/reval.sh`` for re-evaluation
+
 
 By default, trained networks are saved under:
 
