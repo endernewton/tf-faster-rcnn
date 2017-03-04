@@ -79,8 +79,8 @@ class Resnet101(Network):
       bboxes = tf.concat(axis=1, values=[y1, x1, y2, x2])
       crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
 
-      # Only return the crop without max-pool, since resnet101 does not max-pool before next layer
-    return crops
+      # Change it back to the Google RoI pooling layer, more experiments needed.
+    return slim.max_pool2d(crops, [2, 2], padding='SAME')
 
   def build_network(self, sess, is_training=True):
     # select initializers
