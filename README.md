@@ -42,7 +42,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   cd tf-faster-rcnn/lib
   vim setup.py
-  # Check the GPU architecture, if you are using Maxwell arch, please switch to sm_61
+  # Check the GPU architecture, if you are using Pascal arch, please switch to sm_61
   ```
 
 3. Build the Cython modules
