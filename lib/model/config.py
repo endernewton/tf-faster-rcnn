@@ -241,6 +241,9 @@ __C.GPU_ID = 0
 # Default pooling mode, only 'crop' is available
 __C.POOLING_MODE = 'crop'
 
+# Size of the pooled region after RoI pooling
+__C.POOLING_SIZE = 7
+
 
 def get_output_dir(imdb, weights_filename):
   """Return the directory where experimental artifacts are placed.
