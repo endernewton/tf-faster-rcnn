@@ -66,6 +66,7 @@ def resnet_arg_scope(is_training=True,
 class Resnet101(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
+    self._arch = 'res101'
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
