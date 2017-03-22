@@ -165,14 +165,33 @@ class SolverWrapper(object):
       sess.run(tf.variables_initializer(variables, name='init'))
       var_keep_dic = self.get_variables_in_checkpoint_file(self.pretrained_model)
       variables_to_restore = []
+      var_to_dic = {}
       # print(var_keep_dic)
       for v in variables:
+          # exclude the conv weights that are fc weights in vgg16
+          if v.name == 'vgg_16/fc6/weights:0' or v.name == 'vgg_16/fc7/weights:0':
+            var_to_dic[v.name] = v
+            continue
           if v.name.split(':')[0] in var_keep_dic:
               variables_to_restore.append(v)
+      
       restorer = tf.train.Saver(variables_to_restore)
       restorer.restore(sess, self.pretrained_model)
       print('Loaded.')
       sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
+      # A temporary solution to fix the vgg16 issue from conv weights to fc weights
+      if self.net._arch == 'vgg16':
+        print('Converting VGG16 fc layers..')
+        with tf.device("/cpu:0"):
+          fc6_conv = tf.get_variable("fc6_conv", [7, 7, 512, 4096], trainable=False)
+          fc7_conv = tf.get_variable("fc7_conv", [1, 1, 4096, 4096], trainable=False)
+          restorer_fc = tf.train.Saver({"vgg_16/fc6/weights": fc6_conv, "vgg_16/fc7/weights": fc7_conv})
+          restorer_fc.restore(sess, self.pretrained_model)
+
+          sess.run(tf.assign(var_to_dic['vgg_16/fc6/weights:0'], tf.reshape(fc6_conv, 
+                              var_to_dic['vgg_16/fc6/weights:0'].get_shape())))
+          sess.run(tf.assign(var_to_dic['vgg_16/fc7/weights:0'], tf.reshape(fc7_conv, 
+                              var_to_dic['vgg_16/fc7/weights:0'].get_shape())))
       last_snapshot_iter = 0
     else:
       # Get the most recent snapshot and restore
@@ -200,7 +219,7 @@ class SolverWrapper(object):
         self.data_layer_val._perm = perm_val
 
         # Set the learning rate, only reduce once
-        if last_snapshot_iter >= cfg.TRAIN.STEPSIZE:
+        if last_snapshot_iter > cfg.TRAIN.STEPSIZE:
           sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
         else:
           sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
@@ -210,8 +229,9 @@ class SolverWrapper(object):
     last_summary_time = time.time()
     while iter < max_iters + 1:
       # Learning rate
-      if iter == cfg.TRAIN.STEPSIZE:
+      if iter == cfg.TRAIN.STEPSIZE + 1:
         sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
+        self.snapshot(sess, iter)
 
       timer.tic()
       # Get training data, one batch at a time

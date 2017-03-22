@@ -30,6 +30,7 @@ from model.config import cfg
 class vgg16(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
+    self._arch = 'vgg16'
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
@@ -40,8 +41,9 @@ class vgg16(Network):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      bboxes = tf.concat(axis=1, values=[y1, x1, y2, x2])
-      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
+      bboxes = tf.concat([y1, x1, y2, x2], 1)
+      pre_pool_size = cfg.POOLING_SIZE * 2
+      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
 
     return slim.max_pool2d(crops, [2, 2], padding='SAME')
 
@@ -117,11 +119,14 @@ class vgg16(Network):
         pool5 = self._crop_pool_layer(net, rois, "pool5")
       else:
         raise NotImplementedError
-      # Use conv2d instead of fully_connected layers.
-      fc6 = slim.conv2d(pool5, 4096, [7, 7], padding='VALID', scope='fc6')
+
+      # fc6 = slim.conv2d(pool5, 4096, [7, 7], padding='VALID', scope='fc6')
+      pool5_flat = slim.flatten(pool5, scope='flatten')
+      fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
       fc6 = slim.dropout(fc6, is_training=is_training,
                          scope='dropout6')
-      fc7 = slim.conv2d(fc6, 4096, [1, 1], scope='fc7')
+      # fc7 = slim.conv2d(fc6, 4096, [1, 1], scope='fc7')
+      fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
       fc7 = slim.dropout(fc7, is_training=is_training,
                          scope='dropout7')
       fc7 = slim.flatten(fc7, scope='flatten')
