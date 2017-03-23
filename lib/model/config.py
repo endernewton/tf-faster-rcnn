@@ -199,6 +199,20 @@ __C.TEST.MODE = 'nms'
 __C.TEST.RPN_TOP_N = 5000
 
 #
+# ResNet options
+#
+
+__C.RESNET = edict()
+
+# If max-pooling is appended after crop_and_resize, if true, the region will be resized
+# to a squre of 2xPOOLING_SIZE, then 2x2 max-pooling is applied; otherwise
+# the region will be directly resized to a square of POOLING_SIZE
+__C.RESNET.MAX_POOL = True
+
+# Number of fixed blocks during finetuning, by default the first of all 4 blocks are fixed
+__C.RESNET.FIXED_BLOCKS = 1
+
+#
 # MISC
 #
 
@@ -243,10 +257,6 @@ __C.POOLING_MODE = 'crop'
 
 # Size of the pooled region after RoI pooling
 __C.POOLING_SIZE = 7
-
-# If do max-pool
-__C.MAX_POOL = True
-
 
 def get_output_dir(imdb, weights_filename):
   """Return the directory where experimental artifacts are placed.

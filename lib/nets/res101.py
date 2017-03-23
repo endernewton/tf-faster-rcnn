@@ -78,7 +78,7 @@ class Resnet101(Network):
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
       bboxes = tf.concat([y1, x1, y2, x2], 1)
-      if cfg.MAX_POOL:
+      if cfg.RESNET.MAX_POOL:
         pre_pool_size = cfg.POOLING_SIZE * 2
         crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
         crops = slim.max_pool2d(crops, [2, 2], padding='SAME')
@@ -107,13 +107,13 @@ class Resnet101(Network):
     ]
     with slim.arg_scope(resnet_arg_scope(is_training=False)):
       net, _ = resnet_v1.resnet_v1(self._image,
-                                            blocks[0:1],
+                                            blocks[0:cfg.RESNET.FIXED_BLOCKS],
                                             global_pool=False,
                                             include_root_block=True,
                                             scope='resnet_v1_101')
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
       net_conv5, _ = resnet_v1.resnet_v1(net,
-                                            blocks[1:-1],
+                                            blocks[cfg.RESNET.FIXED_BLOCKS:-1],
                                             global_pool=False,
                                             include_root_block=False,
                                             scope='resnet_v1_101')
