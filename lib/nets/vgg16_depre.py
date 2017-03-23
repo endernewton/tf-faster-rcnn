@@ -215,8 +215,8 @@ class vgg16(object):
   def _roi_pool_layer(self, bootom, rois, name):
     with tf.variable_scope(name) as scope:
       return tf.image.roi_pooling(bootom, rois,
-                                    pooled_height=7,
-                                    pooled_width=7,
+                                    pooled_height=cfg.POOLING_SIZE,
+                                    pooled_width=cfg.POOLING_SIZE,
                                     spatial_scale=1./16)[0]
 
   def _crop_pool_layer(self, bottom, rois, name):
@@ -229,7 +229,8 @@ class vgg16(object):
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
       bboxes = tf.concat([y1, x1, y2, x2], 1)
-      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
+      pre_pool_size = cfg.POOLING_SIZE * 2
+      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
 
     return slim.max_pool2d(crops, [2, 2], padding='SAME')
 

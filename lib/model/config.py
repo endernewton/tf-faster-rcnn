@@ -151,6 +151,8 @@ __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
 # For COCO, setting USE_ALL_GT to False will exclude boxes that are flagged as ''iscrowd''
 __C.TRAIN.USE_ALL_GT = True
 
+__C.TRAIN.RES101_NUM_FIX = 2
+
 #
 # Testing options
 #
@@ -240,6 +242,14 @@ __C.GPU_ID = 0
 
 # Default pooling mode, only 'crop' is available
 __C.POOLING_MODE = 'crop'
+
+# Size of the pooled region after RoI pooling
+__C.POOLING_SIZE = 7
+
+# If do max-pool
+__C.MAX_POOL = True
+
+__C.RES101_FLAT = True
 
 
 def get_output_dir(imdb, weights_filename):

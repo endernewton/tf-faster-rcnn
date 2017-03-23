@@ -129,7 +129,7 @@ class vgg16(Network):
       fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
       fc7 = slim.dropout(fc7, is_training=is_training,
                          scope='dropout7')
-      fc7 = slim.flatten(fc7, scope='flatten')
+      # fc7 = slim.flatten(fc7, scope='flatten')
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
                               biases_regularizer=biases_regularizer,
                               activation_fn=None, scope='cls_score')

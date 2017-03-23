@@ -66,6 +66,7 @@ def resnet_arg_scope(is_training=True,
 class Resnet101(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
+    self._arch = 'res101'
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
@@ -76,11 +77,15 @@ class Resnet101(Network):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      bboxes = tf.concat(axis=1, values=[y1, x1, y2, x2])
-      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [14, 14], name="crops")
+      bboxes = tf.concat([y1, x1, y2, x2], 1)
+      if cfg.MAX_POOL:
+        pre_pool_size = cfg.POOLING_SIZE * 2
+        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
+        crops = slim.max_pool2d(crops, [2, 2], padding='SAME')
+      else:
+        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE], name="crops")
 
-      # Change it back to the Google RoI pooling layer, more experiments needed.
-    return slim.max_pool2d(crops, [2, 2], padding='SAME')
+    return crops
 
   def build_network(self, sess, is_training=True):
     # select initializers
@@ -91,32 +96,30 @@ class Resnet101(Network):
       initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
       initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
     bottleneck = resnet_v1.bottleneck
-    blocks_fixed = [
+    blocks = [
       resnet_utils.Block('block1', bottleneck,
                          [(256, 64, 1)] * 2 + [(256, 64, 2)]),
       resnet_utils.Block('block2', bottleneck,
-                         [(512, 128, 1)] * 3 + [(512, 128, 2)])
-    ]
-    blocks_train = [
+                         [(512, 128, 1)] * 3 + [(512, 128, 2)]),
       resnet_utils.Block('block3', bottleneck,
                          [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
       resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
     ]
     with slim.arg_scope(resnet_arg_scope(is_training=False)):
-      net, end_points = resnet_v1.resnet_v1(self._image,
-                                            blocks_fixed,
+      net, _ = resnet_v1.resnet_v1(self._image,
+                                            blocks[0:cfg.TRAIN.RES101_NUM_FIX],
                                             global_pool=False,
                                             include_root_block=True,
                                             scope='resnet_v1_101')
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-      net_conv5, end_points = resnet_v1.resnet_v1(net,
-                                            [blocks_train[0]],
+      net_conv5, _ = resnet_v1.resnet_v1(net,
+                                            blocks[cfg.TRAIN.RES101_NUM_FIX:-1],
                                             global_pool=False,
                                             include_root_block=False,
                                             scope='resnet_v1_101')
 
-    self._act_summaries.append(net)
-    self._layers['conv5_3'] = net
+    self._act_summaries.append(net_conv5)
+    self._layers['conv5_3'] = net_conv5
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
       # build the anchors for the image
@@ -167,21 +170,17 @@ class Resnet101(Network):
         raise NotImplementedError
 
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-      fc7, end_points = resnet_v1.resnet_v1(pool5,
-                                            [blocks_train[1]],
-                                            global_pool=False,
-                                            include_root_block=False,
-                                            scope='resnet_v1_101')
-      # Use conv2d instead of fully_connected layers.
-      # fc7 = slim.avg_pool2d(pool5, [7, 7], stride=7,  padding='VALID', scope='fc7')
-      # fc6 = slim.dropout(fc6, is_training=is_training,
-      #                    scope='dropout6')
-      # fc7 = slim.conv2d(fc6, 4096, [1, 1], scope='fc7')
-      # fc7 = slim.dropout(fc7, is_training=is_training,
-      #                    scope='dropout7')
+      fc7, _ = resnet_v1.resnet_v1(pool5,
+                                    blocks[-1:],
+                                    global_pool=False,
+                                    include_root_block=False,
+                                    scope='resnet_v1_101')
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
-      fc7 = slim.flatten(fc7, scope='flatten')
+      if cfg.RES101_FLAT:
+        fc7 = slim.flatten(fc7, scope='flatten')
+      else:
+        fc7 = tf.reduce_mean(fc7, axis=[1,2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
                               biases_regularizer=biases_regularizer,
                               activation_fn=None, scope='cls_score')
