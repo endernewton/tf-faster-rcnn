@@ -107,13 +107,13 @@ class Resnet101(Network):
     ]
     with slim.arg_scope(resnet_arg_scope(is_training=False)):
       net, _ = resnet_v1.resnet_v1(self._image,
-                                            blocks[0:cfg.TRAIN.RES101_NUM_FIX],
+                                            blocks[0:1],
                                             global_pool=False,
                                             include_root_block=True,
                                             scope='resnet_v1_101')
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
       net_conv5, _ = resnet_v1.resnet_v1(net,
-                                            blocks[cfg.TRAIN.RES101_NUM_FIX:-1],
+                                            blocks[1:-1],
                                             global_pool=False,
                                             include_root_block=False,
                                             scope='resnet_v1_101')
@@ -177,10 +177,8 @@ class Resnet101(Network):
                                     scope='resnet_v1_101')
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
-      if cfg.RES101_FLAT:
-        fc7 = slim.flatten(fc7, scope='flatten')
-      else:
-        fc7 = tf.reduce_mean(fc7, axis=[1,2])
+      # Average pooling done by reduce_mean
+      fc7 = tf.reduce_mean(fc7, axis=[1,2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
                               biases_regularizer=biases_regularizer,
                               activation_fn=None, scope='cls_score')
