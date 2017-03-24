@@ -209,8 +209,8 @@ __C.RESNET = edict()
 # the region will be directly resized to a square of POOLING_SIZE
 __C.RESNET.MAX_POOL = True
 
-# Number of fixed blocks during finetuning, by default the first of all 4 blocks are fixed
-__C.RESNET.FIXED_BLOCKS = 1
+# Number of fixed blocks during finetuning, by default the first 2 of all 4 blocks are fixed
+__C.RESNET.FIXED_BLOCKS = 2
 
 #
 # MISC
@@ -257,6 +257,7 @@ __C.POOLING_MODE = 'crop'
 
 # Size of the pooled region after RoI pooling
 __C.POOLING_SIZE = 7
+
 
 def get_output_dir(imdb, weights_filename):
   """Return the directory where experimental artifacts are placed.

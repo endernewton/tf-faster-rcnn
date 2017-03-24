@@ -1,8 +1,9 @@
 # --------------------------------------------------------
 # Tensorflow Faster R-CNN
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Zheqi He
+# Written by Zheqi He and Xinlei Chen
 # --------------------------------------------------------
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -105,18 +106,26 @@ class Resnet101(Network):
                          [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
       resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
     ]
-    with slim.arg_scope(resnet_arg_scope(is_training=False)):
-      net, _ = resnet_v1.resnet_v1(self._image,
-                                            blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                            global_pool=False,
-                                            include_root_block=True,
-                                            scope='resnet_v1_101')
-    with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-      net_conv5, _ = resnet_v1.resnet_v1(net,
-                                            blocks[cfg.RESNET.FIXED_BLOCKS:-1],
-                                            global_pool=False,
-                                            include_root_block=False,
-                                            scope='resnet_v1_101')
+    if cfg.RESNET.FIXED_BLOCKS > 0:
+      with slim.arg_scope(resnet_arg_scope(is_training=False)):
+        net, _ = resnet_v1.resnet_v1(self._image,
+                                              blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                              global_pool=False,
+                                              include_root_block=True,
+                                              scope='resnet_v1_101')
+      with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
+        net_conv5, _ = resnet_v1.resnet_v1(net,
+                                              blocks[cfg.RESNET.FIXED_BLOCKS:-1],
+                                              global_pool=False,
+                                              include_root_block=False,
+                                              scope='resnet_v1_101')
+    else:
+      with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
+        net_conv5, _ = resnet_v1.resnet_v1(self._image,
+                                              blocks[0:-1],
+                                              global_pool=False,
+                                              include_root_block=False,
+                                              scope='resnet_v1_101')
 
     self._act_summaries.append(net_conv5)
     self._layers['conv5_3'] = net_conv5

@@ -47,7 +47,7 @@ set -x
 if [ ! -f ${NET_FINAL}.index ]; then
     if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
         CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_vgg16_net.py \
-            --weight data/imagenet_weights/vgg_16.ckpt \
+            --weight data/imagenet_weights/vgg16.weights \
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
@@ -56,7 +56,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     else
         CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_vgg16_net.py \
-            --weight data/imagenet_weights/vgg_16.ckpt \
+            --weight data/imagenet_weights/vgg16.weights \
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
