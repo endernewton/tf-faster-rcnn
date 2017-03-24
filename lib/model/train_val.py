@@ -188,9 +188,8 @@ class SolverWrapper(object):
           restorer_fc = tf.train.Saver({"vgg_16/fc6/weights": fc6_conv, "vgg_16/fc7/weights": fc7_conv})
           restorer_fc.restore(sess, self.pretrained_model)
 
-          shape_fc6 = var_to_dic['vgg_16/fc6/weights:0'].get_shape().as_list()
-          sess.run(tf.assign(var_to_dic['vgg_16/fc6/weights:0'], tf.transpose(tf.reshape(tf.transpose(fc6_conv, (3, 0, 1, 2)), 
-                              (shape_fc6[1], shape_fc6[0])), (1, 0))))
+          sess.run(tf.assign(var_to_dic['vgg_16/fc6/weights:0'], tf.reshape(fc6_conv, 
+                              var_to_dic['vgg_16/fc6/weights:0'].get_shape())))
           sess.run(tf.assign(var_to_dic['vgg_16/fc7/weights:0'], tf.reshape(fc7_conv, 
                               var_to_dic['vgg_16/fc7/weights:0'].get_shape())))
       last_snapshot_iter = 0
