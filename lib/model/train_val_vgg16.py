@@ -107,7 +107,7 @@ class SolverWrapper(object):
             if cfg.TRAIN.DOUBLE_BIAS and '/bias:' in var.name:
               scale *= 2.
             if not np.allclose(scale, 1.0):
-              grad = tf.mul(grad, scale)
+              grad = tf.multiply(grad, scale)
             final_gvs.append((grad, var))
         train_op = self.optimizer.apply_gradients(final_gvs)
       else:

@@ -38,9 +38,9 @@ echo Logging output to "$LOG"
 
 set +x
 if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-    NET_FINAL=output/vgg16/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+    NET_FINAL=output/vgg16_depre/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/vgg16_faster_rcnn_iter_${ITERS}.ckpt
 else
-    NET_FINAL=output/vgg16/${TRAIN_IMDB}/default/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+    NET_FINAL=output/vgg16_depre/${TRAIN_IMDB}/default/vgg16_faster_rcnn_iter_${ITERS}.ckpt
 fi
 set -x
 
@@ -51,7 +51,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
-            --cfg experiments/cfgs/vgg16.yml \
+            --cfg experiments/cfgs/vgg16_depre.yml \
             --tag ${EXTRA_ARGS_SLUG} \
             --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     else
@@ -60,7 +60,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --imdb ${TRAIN_IMDB} \
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
-            --cfg experiments/cfgs/vgg16.yml \
+            --cfg experiments/cfgs/vgg16_depre.yml \
             --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     fi
 fi

@@ -36,9 +36,9 @@ echo Logging output to "$LOG"
 
 set +x
 if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-  NET_FINAL=output/vgg16/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+  NET_FINAL=output/vgg16_depre/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/vgg16_faster_rcnn_iter_${ITERS}.ckpt
 else
-  NET_FINAL=output/vgg16/${TRAIN_IMDB}/default/vgg16_faster_rcnn_iter_${ITERS}.ckpt
+  NET_FINAL=output/vgg16_depre/${TRAIN_IMDB}/default/vgg16_faster_rcnn_iter_${ITERS}.ckpt
 fi
 set -x
 
@@ -47,7 +47,7 @@ if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
     --imdb ${TEST_IMDB} \
     --weight data/imagenet_weights/vgg16.weights \
     --model ${NET_FINAL} \
-    --cfg experiments/cfgs/vgg16.yml \
+    --cfg experiments/cfgs/vgg16_depre.yml \
     --tag ${EXTRA_ARGS_SLUG} \
     --set ${EXTRA_ARGS}
 else
@@ -55,7 +55,7 @@ else
     --imdb ${TEST_IMDB} \
     --weight data/imagenet_weights/vgg16.weights \
     --model ${NET_FINAL} \
-    --cfg experiments/cfgs/vgg16.yml \
+    --cfg experiments/cfgs/vgg16_depre.yml \
     --set ${EXTRA_ARGS}
 fi
 
