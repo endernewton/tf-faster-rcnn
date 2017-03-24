@@ -77,7 +77,7 @@ Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgir
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
-### Test with pre-trained models
+### Test with pre-trained models (old)
 1. Download pre-trained models and weights (VGG16)
   ```Shell
   # return to the repository root
@@ -95,7 +95,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 
 2. Create a folder and a softlink to use the pretrained model
   ```Shell
-  NET=vgg16
+  NET=vgg16_depre
   mkdir -p output/${NET}
   cd output/${NET}
   ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
@@ -110,16 +110,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_vgg16.sh $GPU_ID coco
   ```
 
-### Train your own model 
-1. (Optional) If you have just tested the models, first remove the link to the pre-trained models
-  ```Shell
-  NET=vgg16
-  # NET in {vgg16, res101} is the network arch to use
-  rm -v output/${NET}/voc_2007_trainval
-  rm -v output/${NET}/coco_2014_train+coco_2014_valminusminival
-  ```
-  
-2. Train (and test, evaluation)
+### Train your own model (new)  
+1. Train (and test, evaluation)
   ```Shell
   ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
@@ -130,13 +122,13 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
   ```
 
-3. Visualization with Tensorboard
+2. Visualization with Tensorboard
   ```Shell
   tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
   
-4. Test and evaluate
+3. Test and evaluate
   ```Shell
   ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
@@ -147,7 +139,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   ```
   
-5. You can use ``tools/reval.sh`` for re-evaluation
+4. You can use ``tools/reval.sh`` for re-evaluation
 
 
 By default, trained networks are saved under:
