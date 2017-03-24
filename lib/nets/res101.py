@@ -124,7 +124,7 @@ class Resnet101(Network):
         net_conv5, _ = resnet_v1.resnet_v1(self._image,
                                               blocks[0:-1],
                                               global_pool=False,
-                                              include_root_block=False,
+                                              include_root_block=True,
                                               scope='resnet_v1_101')
 
     self._act_summaries.append(net_conv5)

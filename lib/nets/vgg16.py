@@ -108,12 +108,12 @@ class vgg16(Network):
       # fc6 = slim.conv2d(pool5, 4096, [7, 7], padding='VALID', scope='fc6')
       pool5_flat = slim.flatten(pool5, scope='flatten')
       fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
-      fc6 = slim.dropout(fc6, is_training=is_training,
-                         scope='dropout6')
+      if is_training:
+        fc6 = slim.dropout(fc6, scope='dropout6')
       # fc7 = slim.conv2d(fc6, 4096, [1, 1], scope='fc7')
       fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
-      fc7 = slim.dropout(fc7, is_training=is_training,
-                         scope='dropout7')
+      if is_training:
+        fc7 = slim.dropout(fc7, scope='dropout7')
       # fc7 = slim.flatten(fc7, scope='flatten')
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
                               biases_regularizer=biases_regularizer,

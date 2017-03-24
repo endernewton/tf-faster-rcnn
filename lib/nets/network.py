@@ -99,8 +99,8 @@ class Network(object):
   def _roi_pool_layer(self, bootom, rois, name):
     with tf.variable_scope(name) as scope:
       return tf.image.roi_pooling(bootom, rois,
-                                  pooled_height=7,
-                                  pooled_width=7,
+                                  pooled_height=cfg.POOLING_SIZE,
+                                  pooled_width=cfg.POOLING_SIZE,
                                   spatial_scale=1. / 16)[0]
 
   def _crop_pool_layer(self, bottom, rois, name):
