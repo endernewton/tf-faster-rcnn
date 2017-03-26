@@ -4,21 +4,22 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 (experimental, thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
+We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
   
-With Resnet101 (experimental, last ``conv4`` layer):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
+With Resnet101 (last ``conv4`` layer):
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.8**. 
 
 **Note**:
   - The VGG16 numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. 
-  - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/coco_longer/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models.
+  - For Resnet101, we fix the bottom two blocks when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs without max-pool. The final feature maps are average-pooled for classification and regression.
+  - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet101 ones.
 
 ### Additional Features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
@@ -92,8 +93,15 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   **Note**: if you cannot download the models through the link. You can check out the following solutions:
   - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
   - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
+  
+2. Demo for testing on custom images (VGG16, VOC)
+  ```Shell
+  # at reposistory root
+  GPU_ID=0
+  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
+  ```
 
-2. Create a folder and a softlink to use the pretrained model
+3. Create a folder and a softlink to use the pretrained model
   ```Shell
   NET=vgg16_depre
   mkdir -p output/${NET}
@@ -103,7 +111,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   cd ../..
   ```
 
-3. Test with pre-trained VGG16 models
+4. Test with pre-trained VGG16 models
   ```Shell
   GPU_ID=0
   ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
