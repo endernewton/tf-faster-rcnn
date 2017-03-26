@@ -124,7 +124,7 @@ class SolverWrapper(object):
         with tf.variable_scope('Gradient_Mult') as scope:
           for grad, var in gvs:
             scale = 1.
-            if cfg.TRAIN.DOUBLE_BIAS and '/bias:' in var.name:
+            if cfg.TRAIN.DOUBLE_BIAS and '/biases:' in var.name:
               scale *= 2.
             if not np.allclose(scale, 1.0):
               grad = tf.multiply(grad, scale)
@@ -174,7 +174,7 @@ class SolverWrapper(object):
             continue
           if v.name.split(':')[0] in var_keep_dic:
               variables_to_restore.append(v)
-      
+
       restorer = tf.train.Saver(variables_to_restore)
       restorer.restore(sess, self.pretrained_model)
       print('Loaded.')
@@ -230,8 +230,9 @@ class SolverWrapper(object):
     while iter < max_iters + 1:
       # Learning rate
       if iter == cfg.TRAIN.STEPSIZE + 1:
-        sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
+        # Add snapshot here before reducing the learning rate
         self.snapshot(sess, iter)
+        sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
 
       timer.tic()
       # Get training data, one batch at a time

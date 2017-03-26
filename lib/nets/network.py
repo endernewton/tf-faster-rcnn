@@ -265,7 +265,14 @@ class Network(object):
 
     assert tag != None
 
-    rois, cls_prob, bbox_pred = self.build_network(sess, training)
+    if cfg.TRAIN.BIAS_DECAY:
+      biases_regularizer = None
+    else:
+      biases_regularizer = tf.no_regularizer
+
+    with arg_scope([slim.conv2d, slim.fully_connected], biases_regularizer=biases_regularizer, 
+                    biases_initializer=tf.constant_initializer(0.0)): 
+      rois, cls_prob, bbox_pred = self.build_network(sess, training)
 
     layers_to_output = {'rois': rois}
     layers_to_output.update(self._predictions)

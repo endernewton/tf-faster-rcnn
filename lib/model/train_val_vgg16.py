@@ -173,7 +173,7 @@ class SolverWrapper(object):
         self.data_layer_val._perm = perm_val
         
         # Set the learning rate, only reduce once
-        if last_snapshot_iter >= cfg.TRAIN.STEPSIZE:
+        if last_snapshot_iter > cfg.TRAIN.STEPSIZE:
           sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
         else:
           sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
@@ -183,7 +183,9 @@ class SolverWrapper(object):
     last_summary_time = time.time()
     while iter < max_iters+1:
       # Learning rate
-      if iter == cfg.TRAIN.STEPSIZE:
+      if iter == cfg.TRAIN.STEPSIZE + 1:
+        # Add snapshot here before reducing the learning rate
+        self.snapshot(sess, iter)
         sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE * cfg.TRAIN.GAMMA))
 
       timer.tic()
@@ -209,8 +211,9 @@ class SolverWrapper(object):
 
       # Display training information
       if iter % (cfg.TRAIN.DISPLAY) == 0:
-        print 'iter: %d / %d, total loss: %.6f\n >>> rpn_loss_cls: %.6f\n >>> rpn_loss_box: %.6f\n >>> loss_cls: %.6f\n >>> loss_box: %.6f\n >>> lr: %f'%\
-              (iter, max_iters, total_loss, rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, lr.eval())
+        print('iter: %d / %d, total loss: %.6f\n >>> rpn_loss_cls: %.6f\n '
+              '>>> rpn_loss_box: %.6f\n >>> loss_cls: %.6f\n >>> loss_box: %.6f\n >>> lr: %f' % \
+              (iter, max_iters, total_loss, rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, lr.eval()))
         print 'speed: {:.3f}s / iter'.format(timer.average_time)
 
       if iter % cfg.TRAIN.SNAPSHOT_ITERS == 0:

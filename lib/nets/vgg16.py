@@ -42,6 +42,7 @@ class vgg16(Network):
       else:
         initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
         initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
+
       net = slim.repeat(self._image, 2, slim.conv2d, 64, [3, 3],
                         trainable=False, scope='conv1')
       net = slim.max_pool2d(net, [2, 2], padding='SAME', scope='pool1')
@@ -62,19 +63,10 @@ class vgg16(Network):
       self._anchor_component()
 
       # rpn
-      # rpn = self._conv_layer_shape(net, [3, 3], 512, "rpn_conv/3x3", initializer, train)
-      if cfg.TRAIN.BIAS_DECAY:
-        biases_regularizer = None
-      else:
-        biases_regularizer = tf.no_regularizer
-      rpn = slim.conv2d(net, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
-                        biases_regularizer= biases_regularizer,
-                        biases_initializer=tf.constant_initializer(0.0), scope="rpn_conv/3x3")
+      rpn = slim.conv2d(net, 512, [3, 3], trainable=is_training, weights_initializer=initializer, scope="rpn_conv/3x3")
       self._act_summaries.append(rpn)
       rpn_cls_score = slim.conv2d(rpn, self._num_scales * 6, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
-                                  biases_regularizer=biases_regularizer,
-                                  biases_initializer=tf.constant_initializer(0.0),
                                   padding='VALID', activation_fn=None, scope='rpn_cls_score')
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
@@ -82,8 +74,6 @@ class vgg16(Network):
       rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_scales * 6, "rpn_cls_prob")
       rpn_bbox_pred = slim.conv2d(rpn, self._num_scales * 12, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
-                                  biases_regularizer=biases_regularizer,
-                                  biases_initializer=tf.constant_initializer(0.0),
                                   padding='VALID', activation_fn=None, scope='rpn_bbox_pred')
       if is_training:
         rois, roi_scores = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
@@ -105,23 +95,20 @@ class vgg16(Network):
       else:
         raise NotImplementedError
 
-      # fc6 = slim.conv2d(pool5, 4096, [7, 7], padding='VALID', scope='fc6')
       pool5_flat = slim.flatten(pool5, scope='flatten')
       fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
       if is_training:
         fc6 = slim.dropout(fc6, scope='dropout6')
-      # fc7 = slim.conv2d(fc6, 4096, [1, 1], scope='fc7')
       fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
       if is_training:
         fc7 = slim.dropout(fc7, scope='dropout7')
-      # fc7 = slim.flatten(fc7, scope='flatten')
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
-                              biases_regularizer=biases_regularizer,
                               activation_fn=None, scope='cls_score')
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
-                              trainable=is_training, biases_regularizer=biases_regularizer,
+                              trainable=is_training,
                               activation_fn=None, scope='bbox_pred')
+
       self._predictions["rpn_cls_score"] = rpn_cls_score
       self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
       self._predictions["rpn_cls_prob"] = rpn_cls_prob

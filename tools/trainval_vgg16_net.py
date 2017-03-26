@@ -1,6 +1,5 @@
 # --------------------------------------------------------
-# Faster R-CNN
-# Copyright (c) 2017 Xinlei Chen
+# Tensorflow Faster R-CNN
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen, based on code from Ross Girshick
 # --------------------------------------------------------

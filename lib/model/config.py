@@ -207,7 +207,7 @@ __C.RESNET = edict()
 # If max-pooling is appended after crop_and_resize, if true, the region will be resized
 # to a squre of 2xPOOLING_SIZE, then 2x2 max-pooling is applied; otherwise
 # the region will be directly resized to a square of POOLING_SIZE
-__C.RESNET.MAX_POOL = True
+__C.RESNET.MAX_POOL = False
 
 # Number of fixed blocks during finetuning, by default the first 2 of all 4 blocks are fixed
 __C.RESNET.FIXED_BLOCKS = 2

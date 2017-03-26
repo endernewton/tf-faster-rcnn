@@ -1,8 +1,7 @@
 # --------------------------------------------------------
-# Faster R-CNN
-# Copyright (c) 2017 Xinlei Chen
+# Tensorflow Faster R-CNN
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Xinlei Chen, based on code from Ross Girshick
+# Written by Zheqi He, Xinlei Chen, based on code from Ross Girshick
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
@@ -122,8 +121,10 @@ if __name__ == '__main__':
   cfg.TRAIN.USE_FLIPPED = orgflip
   if args.net == 'vgg16':
     net = vgg16(batch_size=cfg.TRAIN.IMS_PER_BATCH)
-  else:
+  elif args.net == 'res101':
     net = Resnet101(batch_size=cfg.TRAIN.IMS_PER_BATCH)
+  else:
+    raise NotImplementedError
   train_net(net, imdb, roidb, valroidb, output_dir, tb_dir,
             pretrained_model=args.weight,
             max_iters=args.max_iters)

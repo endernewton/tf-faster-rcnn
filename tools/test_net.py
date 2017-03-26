@@ -1,3 +1,8 @@
+# --------------------------------------------------------
+# Tensorflow Faster R-CNN
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Zheqi he, Xinlei Chen, based on code from Ross Girshick
+# --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -88,8 +93,10 @@ if __name__ == '__main__':
   # load network
   if args.net == 'vgg16':
     net = vgg16(batch_size=1)
-  else:
+  elif args.net == 'res101':
     net = Resnet101(batch_size=1)
+  else:
+    raise NotImplementedError
   # load model
   if imdb.name.startswith('voc'):
     anchors = [8, 16, 32]

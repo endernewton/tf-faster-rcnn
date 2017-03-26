@@ -1,3 +1,8 @@
+# --------------------------------------------------------
+# Tensorflow Faster R-CNN
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Xinlei Chen, based on code from Ross Girshick
+# --------------------------------------------------------
 import _init_paths
 from model.test_vgg16 import test_net
 from model.config import cfg, cfg_from_file, cfg_from_list

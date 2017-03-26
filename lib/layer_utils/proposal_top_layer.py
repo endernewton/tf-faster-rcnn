@@ -30,7 +30,7 @@ def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, ancho
   length = scores.shape[0]
   if length < rpn_top_n:
     # Random selection, maybe unnecessary and loses good proposals
-    # But this case rarely happen
+    # But such case rarely happens
     top_inds = npr.choice(length, size=rpn_top_n, replace=True)
   else:
     top_inds = scores.argsort(0)[::-1]

@@ -20,6 +20,12 @@ case ${DATASET} in
     STEPSIZE=50000
     ITERS=70000
     ;;
+  pascal_voc_0712)
+    TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
+    TEST_IMDB="voc_2007_test"
+    STEPSIZE=50000
+    ITERS=70000
+    ;;
   coco)
     TRAIN_IMDB="coco_2014_train+coco_2014_valminusminival"
     TEST_IMDB="coco_2014_minival"
@@ -32,7 +38,7 @@ case ${DATASET} in
     ;;
 esac
 
-LOG="experiments/logs/vgg16_${TRAIN_IMDB}_${EXTRA_ARGS_SLUG}_vgg16.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
+LOG="experiments/logs/vgg16_depre_${TRAIN_IMDB}_${EXTRA_ARGS_SLUG}_vgg16.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
