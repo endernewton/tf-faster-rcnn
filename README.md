@@ -61,7 +61,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
    mv vgg_16.ckpt vgg16.ckpt
    cd ../..
    ```
- For Resnet101, you can set up like:
+   For Resnet101, you can set up like:
    ```Shell
    mkdir -p data/imagenet_weights
    cd data/imagenet_weights
