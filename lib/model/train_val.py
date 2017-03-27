@@ -107,7 +107,6 @@ class SolverWrapper(object):
       tf.set_random_seed(cfg.RNG_SEED)
       # Build the main computation graph
       layers = self.net.create_architecture(sess, 'TRAIN', self.imdb.num_classes,
-                                            caffe_weight_path=self.pretrained_model,
                                             tag='default', anchor_scales=anchors)
       # Define the loss
       loss = layers['total_loss']

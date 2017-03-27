@@ -29,9 +29,6 @@ def parse_args():
   parser.add_argument('--model', dest='model',
             help='model to test',
             default=None, type=str)
-  parser.add_argument('--weight', dest='weight',
-            help='weight to test',
-            default=None, type=str)
   parser.add_argument('--imdb', dest='imdb_name',
             help='dataset to test',
             default='voc_2007_test', type=str)
