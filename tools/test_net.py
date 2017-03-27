@@ -100,7 +100,7 @@ if __name__ == '__main__':
   else:
     anchors = [4, 8, 16, 32]
 
-  net.create_architecture(sess, "TEST", imdb.num_classes, caffe_weight_path=args.weight, 
+  net.create_architecture(sess, "TEST", imdb.num_classes,  
                           tag='default', anchor_scales=anchors)
 
   if args.model:
