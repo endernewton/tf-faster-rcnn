@@ -209,8 +209,11 @@ __C.RESNET = edict()
 # the region will be directly resized to a square of POOLING_SIZE
 __C.RESNET.MAX_POOL = False
 
-# Number of fixed blocks during finetuning, by default the first 2 of all 4 blocks are fixed
-__C.RESNET.FIXED_BLOCKS = 2
+# Number of fixed blocks during finetuning, by default the first of all 4 blocks is fixed
+__C.RESNET.FIXED_BLOCKS = 1
+
+# Whether to tune the batch nomalization parameters during training
+__C.RESNET.BN_TRAIN = False
 
 #
 # MISC

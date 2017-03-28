@@ -43,7 +43,8 @@ def resnet_arg_scope(is_training=True,
       'decay': batch_norm_decay,
       'epsilon': batch_norm_epsilon,
       'scale': batch_norm_scale,
-      'updates_collections': ops.GraphKeys.UPDATE_OPS,
+      'trainable': cfg.RESNET.BN_TRAIN,
+      'updates_collections': ops.GraphKeys.UPDATE_OPS
   }
 
   with arg_scope(
@@ -72,8 +73,10 @@ class Resnet101(Network):
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
       batch_ids = tf.squeeze(tf.slice(rois, [0, 0], [-1, 1], name="batch_id"), [1])
-      height = tf.ceil(self._im_info[0, 0] / 16. - 1.) * 16.
-      width = tf.ceil(self._im_info[0, 1] / 16. - 1.) * 16.
+      # Get the normalized coordinates of bboxes
+      bottom_shape = tf.shape(bottom)
+      height = (tf.to_float(bottom_shape[1]) - 1.) * np.float32(self._feat_stride[0])
+      width = (tf.to_float(bottom_shape[2]) - 1.) * np.float32(self._feat_stride[0])
       x1 = tf.slice(rois, [0, 1], [-1, 1], name="x1") / width
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
