@@ -4,6 +4,8 @@
 # Written by Xinlei Chen
 # --------------------------------------------------------
 
+# This is a deprecated version, included for the sake of loading old models
+
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim import losses
@@ -228,7 +230,7 @@ class vgg16(object):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      bboxes = tf.concat([y1, x1, y2, x2], 1)
+      bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
       pre_pool_size = cfg.POOLING_SIZE * 2
       crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
 

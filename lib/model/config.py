@@ -204,12 +204,14 @@ __C.TEST.RPN_TOP_N = 5000
 
 __C.RESNET = edict()
 
-# If max-pooling is appended after crop_and_resize, if true, the region will be resized
-# to a squre of 2xPOOLING_SIZE, then 2x2 max-pooling is applied; otherwise
-# the region will be directly resized to a square of POOLING_SIZE
+# Option to set if max-pooling is appended after crop_and_resize. 
+# if true, the region will be resized to a squre of 2xPOOLING_SIZE, 
+# then 2x2 max-pooling is applied; otherwise the region will be directly
+# resized to a square of POOLING_SIZE
 __C.RESNET.MAX_POOL = False
 
 # Number of fixed blocks during finetuning, by default the first of all 4 blocks is fixed
+# Range: 0 (none) to 3 (all)
 __C.RESNET.FIXED_BLOCKS = 1
 
 # Whether to tune the batch nomalization parameters during training
@@ -253,13 +255,16 @@ __C.EXP_DIR = 'default'
 __C.USE_GPU_NMS = True
 
 # Default GPU device id
-__C.GPU_ID = 0
+# __C.GPU_ID = 0
 
 # Default pooling mode, only 'crop' is available
 __C.POOLING_MODE = 'crop'
 
 # Size of the pooled region after RoI pooling
 __C.POOLING_SIZE = 7
+
+# Anchor scales for RPN
+__C.ANCHOR_SCALES = [8,16,32]
 
 
 def get_output_dir(imdb, weights_filename):

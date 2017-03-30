@@ -76,19 +76,13 @@ class SolverWrapper(object):
     self.data_layer = RoIDataLayer(self.roidb, self.imdb.num_classes)
     self.data_layer_val = RoIDataLayer(self.valroidb, self.imdb.num_classes, random=True)
 
-    # Determine different scales for anchors, see paper
-    if self.imdb.name.startswith('voc'):
-      anchors = [8, 16, 32]
-    else:
-      anchors = [4, 8, 16, 32]
-
     with sess.graph.as_default():
       # Set the random seed for tensorflow
       tf.set_random_seed(cfg.RNG_SEED)
       # Build the main computation graph
       layers = self.net.create_architecture(sess, "TRAIN", self.imdb.num_classes,
                                             caffe_weight_path=self.pretrained_model, 
-                                            tag='default', anchor_scales=anchors)
+                                            tag='default', anchor_scales=cfg.ANCHOR_SCALES)
       # Define the loss
       loss = layers['total_loss']
 

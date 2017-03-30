@@ -19,18 +19,21 @@ case ${DATASET} in
     TEST_IMDB="voc_2007_test"
     STEPSIZE=50000
     ITERS=70000
+    ANCHORS="[8,16,32]"
     ;;
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
     STEPSIZE=50000
     ITERS=70000
+    ANCHORS="[8,16,32]"
     ;;
   coco)
     TRAIN_IMDB="coco_2014_train+coco_2014_valminusminival"
     TEST_IMDB="coco_2014_minival"
     STEPSIZE=350000
     ITERS=490000
+    ANCHORS="[4,8,16,32]"
     ;;
   *)
     echo "No dataset given"
@@ -59,7 +62,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --iters ${ITERS} \
             --cfg experiments/cfgs/vgg16_depre.yml \
             --tag ${EXTRA_ARGS_SLUG} \
-            --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+            --set ANCHOR_SCALES ${ANCHORS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     else
         CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_vgg16_net.py \
             --weight data/imagenet_weights/vgg16.weights \
@@ -67,7 +70,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --imdbval ${TEST_IMDB} \
             --iters ${ITERS} \
             --cfg experiments/cfgs/vgg16_depre.yml \
-            --set TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+            --set ANCHOR_SCALES ${ANCHORS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     fi
 fi
 

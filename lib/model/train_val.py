@@ -1,7 +1,7 @@
 # --------------------------------------------------------
 # Tensorflow Faster R-CNN
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Xinlei Chen
+# Written by Xinlei Chen and Zheqi He
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
@@ -97,17 +97,12 @@ class SolverWrapper(object):
     self.data_layer_val = RoIDataLayer(self.valroidb, self.imdb.num_classes, random=True)
 
     # Determine different scales for anchors, see paper
-    if self.imdb.name.startswith('voc'):
-      anchors = [8, 16, 32]
-    else:
-      anchors = [4, 8, 16, 32]
-
     with sess.graph.as_default():
       # Set the random seed for tensorflow
       tf.set_random_seed(cfg.RNG_SEED)
       # Build the main computation graph
       layers = self.net.create_architecture(sess, 'TRAIN', self.imdb.num_classes,
-                                            tag='default', anchor_scales=anchors)
+                                            tag='default', anchor_scales=cfg.ANCHOR_SCALES)
       # Define the loss
       loss = layers['total_loss']
       # Set learning rate and momentum
@@ -156,7 +151,7 @@ class SolverWrapper(object):
     ss_paths = sfiles
 
     if lsf == 0:
-      # Fresh train directly from VGG weights
+      # Fresh train directly from ImageNet weights
       print('Loading initial model weights from {:s}'.format(self.pretrained_model))
       variables = tf.global_variables()
 
@@ -172,7 +167,8 @@ class SolverWrapper(object):
             var_to_dic[v.name] = v
             continue
           if v.name.split(':')[0] in var_keep_dic:
-              variables_to_restore.append(v)
+            print('Varibles restored: %s' % v.name)
+            variables_to_restore.append(v)
 
       restorer = tf.train.Saver(variables_to_restore)
       restorer.restore(sess, self.pretrained_model)

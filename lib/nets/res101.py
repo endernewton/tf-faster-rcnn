@@ -34,11 +34,13 @@ from tensorflow.contrib.layers.python.layers import layers
 from model.config import cfg
 
 def resnet_arg_scope(is_training=True,
-                     weight_decay=0.0001,
+                     weight_decay=cfg.TRAIN.WEIGHT_DECAY,
                      batch_norm_decay=0.997,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
   batch_norm_params = {
+      # NOTE 'is_training' here does not work because inside resnet it gets reset:
+      # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L187
       'is_training': False,
       'decay': batch_norm_decay,
       'epsilon': batch_norm_epsilon,
@@ -55,15 +57,8 @@ def resnet_arg_scope(is_training=True,
       activation_fn=nn_ops.relu,
       normalizer_fn=layers.batch_norm,
       normalizer_params=batch_norm_params):
-    with arg_scope([layers.batch_norm], **batch_norm_params):
-      # The following implies padding='SAME' for pool1, which makes feature
-      # alignment easier for dense prediction tasks. This is also used in
-      # https://github.com/facebook/fb.resnet.torch. However the accompanying
-      # code of 'Deep Residual Learning for Image Recognition' uses
-      # padding='VALID' for pool1. You can switch to that choice by setting
-      # tf.contrib.framework.arg_scope([tf.contrib.layers.max_pool2d], padding='VALID').
-      with arg_scope([layers.max_pool2d], padding='SAME') as arg_sc:
-        return arg_sc
+    with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
+      return arg_sc
 
 class Resnet101(Network):
   def __init__(self, batch_size=1):
@@ -81,7 +76,8 @@ class Resnet101(Network):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      bboxes = tf.concat([y1, x1, y2, x2], 1)
+      # Won't be backpropagated to rois anyway, but to save time
+      bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
       if cfg.RESNET.MAX_POOL:
         pre_pool_size = cfg.POOLING_SIZE * 2
         crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
@@ -90,6 +86,16 @@ class Resnet101(Network):
         crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE], name="crops")
 
     return crops
+
+  # Do the first few layers manually, because 'SAME' padding can behave inconsistently
+  # for images of different sizes: sometimes 0, sometimes 1
+  def build_base(self):
+    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
+      net = resnet_utils.conv2d_same(self._image, 64, 7, stride=2, scope='conv1')
+      net = tf.pad(net, [[0, 0], [1, 1], [1, 1], [0, 0]])
+      net = slim.max_pool2d(net, [3, 3], stride=2, padding='VALID', scope='pool1')
+
+    return net
 
   def build_network(self, sess, is_training=True):
     # select initializers
@@ -105,29 +111,41 @@ class Resnet101(Network):
                          [(256, 64, 1)] * 2 + [(256, 64, 2)]),
       resnet_utils.Block('block2', bottleneck,
                          [(512, 128, 1)] * 3 + [(512, 128, 2)]),
+      # Use stride-1 for the last conv4 layer
       resnet_utils.Block('block3', bottleneck,
                          [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
       resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
     ]
-    if cfg.RESNET.FIXED_BLOCKS > 0:
+    assert(cfg.RESNET.FIXED_BLOCKS < 4 and cfg.RESNET.FIXED_BLOCKS >= 0)
+    if cfg.RESNET.FIXED_BLOCKS == 3:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
-        net, _ = resnet_v1.resnet_v1(self._image,
-                                              blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                              global_pool=False,
-                                              include_root_block=True,
-                                              scope='resnet_v1_101')
+        net = self.build_base()
+        net_conv5, _ = resnet_v1.resnet_v1(net,
+                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                      global_pool=False,
+                                      include_root_block=False,
+                                      scope='resnet_v1_101')
+    elif cfg.RESNET.FIXED_BLOCKS > 0:
+      with slim.arg_scope(resnet_arg_scope(is_training=False)):
+        net = self.build_base()
+        net, _ = resnet_v1.resnet_v1(net,
+                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                      global_pool=False,
+                                      include_root_block=False,
+                                      scope='resnet_v1_101')
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net_conv5, _ = resnet_v1.resnet_v1(net,
                                               blocks[cfg.RESNET.FIXED_BLOCKS:-1],
                                               global_pool=False,
                                               include_root_block=False,
                                               scope='resnet_v1_101')
-    else:
+    else: # cfg.RESNET.FIXED_BLOCKS == 0
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-        net_conv5, _ = resnet_v1.resnet_v1(self._image,
+        net = self.build_base()
+        net_conv5, _ = resnet_v1.resnet_v1(net,
                                               blocks[0:-1],
                                               global_pool=False,
-                                              include_root_block=True,
+                                              include_root_block=False,
                                               scope='resnet_v1_101')
 
     self._act_summaries.append(net_conv5)
@@ -177,6 +195,7 @@ class Resnet101(Network):
                                     global_pool=False,
                                     include_root_block=False,
                                     scope='resnet_v1_101')
+
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
       # Average pooling done by reduce_mean

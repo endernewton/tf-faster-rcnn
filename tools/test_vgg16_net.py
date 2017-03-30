@@ -85,13 +85,9 @@ if __name__ == '__main__':
   # load network
   net = vgg16(batch_size=1)
   # load model
-  if imdb.name.startswith('voc'):
-    anchors = [8, 16, 32]
-  else:
-    anchors = [4, 8, 16, 32]
 
   net.create_architecture(sess, "TEST", imdb.num_classes, caffe_weight_path=args.weight, 
-                          tag='default', anchor_scales=anchors)
+                          tag='default', anchor_scales=cfg.ANCHOR_SCALES)
 
   if args.model:
     print ('Loading model check point from {:s}').format(args.model)
