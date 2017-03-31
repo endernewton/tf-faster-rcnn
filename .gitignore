@@ -1,7 +1,6 @@
 *.so
 *.pyc
 output
-experiments/logs
 tensorboard
 lib/build
 lib/pycocotools
