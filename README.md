@@ -10,13 +10,13 @@ With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
   
-With Resnet101 (last ``conv4`` layer):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7** (model coming soon). 
+With Resnet101 (last ``conv4``):
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
 
 **Note**:
   - The VGG16 numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
-  - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf).
+  - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and exclude ground truth boxes in RoIs during training.
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. 
   - For Resnet101, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool. The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay set to Renset101 default 1e-4.
   - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet101 ones.
@@ -78,7 +78,7 @@ Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgir
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
-### Test with pre-trained models (old)
+### Test with (old) pre-trained models (Demo Included)
 1. Download pre-trained models and weights (VGG16)
   ```Shell
   # return to the repository root
