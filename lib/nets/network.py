@@ -42,6 +42,25 @@ class Network(object):
     self._train_summaries = []
     self._event_summaries = {}
 
+  def _add_image_summary(self, image, boxes):
+    # bgr to rgb (opencv uses bgr)
+    channels = tf.unstack (image, axis=-1)
+    image    = tf.stack ([channels[2], channels[1], channels[0]], axis=-1)
+    # dims for normalization
+    width  = tf.to_float(tf.shape(image)[2])
+    height = tf.to_float(tf.shape(image)[1])
+    # from [x1, y1, x2, y2, cls] to normalized [y1, x1, y1, x1]
+    cols = tf.unstack(boxes, axis=1)
+    boxes = tf.stack([cols[1] / height,
+                      cols[0] / width,
+                      cols[3] / height,
+                      cols[2] / width], axis=1)
+    # add batch dimension (assume batch_size==1)
+    assert image.get_shape()[0] == 1
+    boxes = tf.expand_dims(boxes, dim=0)
+    image = tf.image.draw_bounding_boxes(image, boxes)
+    tf.summary.image('TRAIN/ground_truth', image)
+
   def _add_act_summary(self, tensor):
     tf.summary.histogram('ACT/' + tensor.op.name + '/activations', tensor)
     tf.summary.scalar('ACT/' + tensor.op.name + '/zero_fraction',
@@ -292,6 +311,7 @@ class Network(object):
 
     val_summaries = []
     with tf.device("/cpu:0"):
+      self._add_image_summary(self._image, self._gt_boxes)
       for key, var in self._event_summaries.items():
         val_summaries.append(tf.summary.scalar(key, var))
       for key, var in self._score_summaries.items():
