@@ -12,7 +12,7 @@ With VGG16 (``conv5_3``):
   
 With Resnet101 (last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **75.1**. 
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN][https://github.com/daijifeng001/R-FCN] schedule), **78.9**.
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **78.9**.
   
 
 **Note**:
