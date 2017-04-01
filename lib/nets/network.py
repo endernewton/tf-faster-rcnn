@@ -59,7 +59,8 @@ class Network(object):
     assert image.get_shape()[0] == 1
     boxes = tf.expand_dims(boxes, dim=0)
     image = tf.image.draw_bounding_boxes(image, boxes)
-    tf.summary.image('TRAIN/ground_truth', image)
+    
+    return tf.summary.image('TRAIN/ground_truth', image)
 
   def _add_act_summary(self, tensor):
     tf.summary.histogram('ACT/' + tensor.op.name + '/activations', tensor)
@@ -311,7 +312,7 @@ class Network(object):
 
     val_summaries = []
     with tf.device("/cpu:0"):
-      self._add_image_summary(self._image, self._gt_boxes)
+      val_summaries.append(self._add_image_summary(self._image, self._gt_boxes))
       for key, var in self._event_summaries.items():
         val_summaries.append(tf.summary.scalar(key, var))
       for key, var in self._score_summaries.items():
