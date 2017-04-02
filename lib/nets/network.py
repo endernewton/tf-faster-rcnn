@@ -43,6 +43,8 @@ class Network(object):
     self._event_summaries = {}
 
   def _add_image_summary(self, image, boxes):
+    # add back mean
+    image += cfg.PIXEL_MEANS
     # bgr to rgb (opencv uses bgr)
     channels = tf.unstack (image, axis=-1)
     image    = tf.stack ([channels[2], channels[1], channels[0]], axis=-1)
