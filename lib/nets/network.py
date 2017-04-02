@@ -62,7 +62,7 @@ class Network(object):
     boxes = tf.expand_dims(boxes, dim=0)
     image = tf.image.draw_bounding_boxes(image, boxes)
     
-    return tf.summary.image('TRAIN/ground_truth', image)
+    return tf.summary.image('ground_truth', image)
 
   def _add_act_summary(self, tensor):
     tf.summary.histogram('ACT/' + tensor.op.name + '/activations', tensor)
