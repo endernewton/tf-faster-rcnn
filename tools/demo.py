@@ -133,9 +133,10 @@ if __name__ == '__main__':
     # load network
     if demonet == 'vgg16':
         net = vgg16(batch_size=1)
-    else:
+    elif demonet == 'res101':
         net = Resnet101(batch_size=1)
-
+    else:
+        raise NotImplementedError
     net.create_architecture(sess, "TEST", 21,
                           tag='default', anchor_scales=[8, 16, 32])
     saver = tf.train.Saver()
