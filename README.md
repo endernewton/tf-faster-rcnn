@@ -101,9 +101,9 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```Shell
   # at reposistory root
   GPU_ID=0
-  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
+  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo_depre.py 
   ```
-  **Note** VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).
+  **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).
 
 3. Create a folder and a softlink to use the pretrained model
   ```Shell
