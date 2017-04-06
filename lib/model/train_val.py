@@ -101,8 +101,9 @@ class SolverWrapper(object):
       # Set the random seed for tensorflow
       tf.set_random_seed(cfg.RNG_SEED)
       # Build the main computation graph
-      layers = self.net.create_architecture(sess, 'TRAIN', self.imdb.num_classes,
-                                            tag='default', anchor_scales=cfg.ANCHOR_SCALES)
+      layers = self.net.create_architecture(sess, 'TRAIN', self.imdb.num_classes, tag='default',
+                                            anchor_scales=cfg.ANCHOR_SCALES,
+                                            anchor_ratios=cfg.ANCHOR_RATIOS)
       # Define the loss
       loss = layers['total_loss']
       # Set learning rate and momentum
