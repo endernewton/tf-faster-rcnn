@@ -60,7 +60,7 @@ class vgg16(Network):
       self._act_summaries.append(net)
       self._layers['conv5_3'] = net
       # build the anchors for the image
-      self._anchor_component(net)
+      self._anchor_component()
 
       # rpn
       rpn = slim.conv2d(net, 512, [3, 3], trainable=is_training, weights_initializer=initializer, scope="rpn_conv/3x3")
