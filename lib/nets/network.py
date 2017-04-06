@@ -272,8 +272,8 @@ class Network(object):
 
     return loss
 
-  def create_architecture(self, sess, mode, num_classes,
-                          tag=None, anchor_scales=[8, 16, 32]):
+  def create_architecture(self, sess, mode, num_classes, tag=None,
+                          anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
     self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
     self._gt_boxes = tf.placeholder(tf.float32, shape=[None, 5])
@@ -283,6 +283,11 @@ class Network(object):
     self._mode = mode
     self._anchor_scales = anchor_scales
     self._num_scales = len(anchor_scales)
+
+    self._anchor_ratios = anchor_ratios
+    self._num_ratios = len(anchor_ratios)
+
+    self._num_anchors = self._num_scales * self._num_ratios
 
     training = mode == 'TRAIN'
     testing = mode == 'TEST'
@@ -349,7 +354,7 @@ class Network(object):
     return cls_score, cls_prob, bbox_pred, rois
 
   def get_summary(self, sess, blobs):
-    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'], \
+    feed_dict = {self._image: blobs['data'], self._im_info: blobs['im_info'],
                  self._gt_boxes: blobs['gt_boxes']}
     summary = sess.run(self._summary_op_val, feed_dict=feed_dict)
 

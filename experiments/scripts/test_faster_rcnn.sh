@@ -20,18 +20,21 @@ case ${DATASET} in
     TEST_IMDB="voc_2007_test"
     ITERS=70000
     ANCHORS="[8,16,32]"
+    RATIOS="[0.5,1,2]"
     ;;
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
     ITERS=110000
     ANCHORS="[8,16,32]"
+    RATIOS="[0.5,1,2]"
     ;;
   coco)
     TRAIN_IMDB="coco_2014_train+coco_2014_valminusminival"
     TEST_IMDB="coco_2014_minival"
     ITERS=490000
     ANCHORS="[4,8,16,32]"
+    RATIOS="[0.5,1,2]"
     ;;
   *)
     echo "No dataset given"
@@ -58,13 +61,13 @@ if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
     --cfg experiments/cfgs/${NET}.yml \
     --tag ${EXTRA_ARGS_SLUG} \
     --net ${NET} \
-    --set ANCHOR_SCALES ${ANCHORS} ${EXTRA_ARGS}
+    --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} ${EXTRA_ARGS}
 else
   CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/test_net.py \
     --imdb ${TEST_IMDB} \
     --model ${NET_FINAL} \
     --cfg experiments/cfgs/${NET}.yml \
     --net ${NET} \
-    --set ANCHOR_SCALES ${ANCHORS} ${EXTRA_ARGS}
+    --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} ${EXTRA_ARGS}
 fi
 
