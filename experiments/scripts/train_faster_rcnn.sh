@@ -21,6 +21,7 @@ case ${DATASET} in
     STEPSIZE=50000
     ITERS=70000
     ANCHORS="[8,16,32]"
+		RATIOS="[0.5,1,2]"
     ;;
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
@@ -28,6 +29,7 @@ case ${DATASET} in
     STEPSIZE=80000
     ITERS=110000
     ANCHORS="[8,16,32]"
+		RATIOS="[0.5,1,2]"
     ;;
   coco)
     TRAIN_IMDB="coco_2014_train+coco_2014_valminusminival"
@@ -35,6 +37,7 @@ case ${DATASET} in
     STEPSIZE=350000
     ITERS=490000
     ANCHORS="[4,8,16,32]"
+		RATIOS="[0.5,1,2]"
     ;;
   *)
     echo "No dataset given"
@@ -64,7 +67,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --cfg experiments/cfgs/${NET}.yml \
             --tag ${EXTRA_ARGS_SLUG} \
             --net ${NET} \
-            --set ANCHOR_SCALES ${ANCHORS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+            --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     else
         CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
             --weight data/imagenet_weights/${NET}.ckpt \
@@ -73,7 +76,7 @@ if [ ! -f ${NET_FINAL}.index ]; then
             --iters ${ITERS} \
             --cfg experiments/cfgs/${NET}.yml \
             --net ${NET} \
-            --set ANCHOR_SCALES ${ANCHORS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+            --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
     fi
 fi
 

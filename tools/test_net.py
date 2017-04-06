@@ -96,8 +96,9 @@ if __name__ == '__main__':
     raise NotImplementedError
   # load model
 
-  net.create_architecture(sess, "TEST", imdb.num_classes,  
-                          tag='default', anchor_scales=cfg.ANCHOR_SCALES)
+  net.create_architecture(sess, "TEST", imdb.num_classes, tag='default',
+                          anchor_scales=cfg.ANCHOR_SCALES,
+                          anchor_ratios=cfg.ANCHOR_RATIOS)
 
   if args.model:
     print(('Loading model check point from {:s}').format(args.model))
