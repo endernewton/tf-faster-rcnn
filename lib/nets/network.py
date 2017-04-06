@@ -99,7 +99,7 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_top_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info,
-                                     self._feat_stride, self._anchors, self._anchor_scales],
+                                     self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
                                     [tf.float32, tf.float32])
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
@@ -110,7 +110,7 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
-                                     self._feat_stride, self._anchors, self._anchor_scales],
+                                     self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
                                     [tf.float32, tf.float32])
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
@@ -150,13 +150,13 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(
         anchor_target_layer,
-        [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales],
+        [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
         [tf.float32, tf.float32, tf.float32, tf.float32])
 
       rpn_labels.set_shape([1, 1, None, None])
-      rpn_bbox_targets.set_shape([1, None, None, self._num_scales * 12])
-      rpn_bbox_inside_weights.set_shape([1, None, None, self._num_scales * 12])
-      rpn_bbox_outside_weights.set_shape([1, None, None, self._num_scales * 12])
+      rpn_bbox_targets.set_shape([1, None, None, self._num_anchors * 4])
+      rpn_bbox_inside_weights.set_shape([1, None, None, self._num_anchors * 4])
+      rpn_bbox_outside_weights.set_shape([1, None, None, self._num_anchors * 4])
 
       rpn_labels = tf.to_int32(rpn_labels, name="to_int32")
       self._anchor_targets['rpn_labels'] = rpn_labels
@@ -199,7 +199,7 @@ class Network(object):
       width = tf.to_int32(tf.ceil(self._im_info[0, 1] / np.float32(self._feat_stride[0])))
       anchors, anchor_length = tf.py_func(generate_anchors_pre,
                                           [height, width,
-                                           self._feat_stride, self._anchor_scales],
+                                           self._feat_stride, self._anchor_scales, self._anchor_ratios],
                                           [tf.float32, tf.int32], name="generate_anchors")
       anchors.set_shape([None, 4])
       anchor_length.set_shape([])

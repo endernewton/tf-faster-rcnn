@@ -12,14 +12,15 @@ from model.bbox_transform import bbox_transform_inv, clip_boxes
 import numpy.random as npr
 
 
-def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, anchor_scales):
+def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, anchor_scales, anchor_ratios):
   """A layer that just selects the top region proposals
      without using non-maximal suppression,
      For details please see the technical report
   """
   rpn_top_n = cfg.TEST.RPN_TOP_N
   scales = np.array(anchor_scales)
-  num_anchors = scales.shape[0] * 3
+  ratios = np.array(anchor_ratios)
+  num_anchors = scales.shape[0] * ratios.shape[0]
   im_info = im_info[0]
 
   scores = rpn_cls_prob[:, :, :, num_anchors:]
