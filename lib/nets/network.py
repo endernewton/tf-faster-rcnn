@@ -192,10 +192,12 @@ class Network(object):
 
       return rois, roi_scores
 
-  def _anchor_component(self):
+  def _anchor_component(self, bottom):
     with tf.variable_scope('ANCHOR_' + self._tag) as scope:
-      height = tf.to_int32(tf.ceil(self._im_info[0, 0] / 16.))
-      width = tf.to_int32(tf.ceil(self._im_info[0, 1] / 16.))
+      # just to get the shape right
+      bottom_shape = tf.shape(bottom)
+      height = tf.to_int32(bottom_shape[1])
+      width = tf.to_int32(bottom_shape[2])
       anchors, anchor_length = tf.py_func(generate_anchors_pre,
                                           [height, width,
                                            self._feat_stride, self._anchor_scales],
@@ -224,7 +226,7 @@ class Network(object):
     return loss_box
 
   def _add_losses(self, sigma_rpn=3.0):
-    with tf.variable_scope('vgg16-loss_' + self._tag) as scope:
+    with tf.variable_scope('loss_' + self._tag) as scope:
       # RPN, class loss
       rpn_cls_score = tf.reshape(self._predictions['rpn_cls_score_reshape'], [-1, 2])
       rpn_label = tf.reshape(self._anchor_targets['rpn_labels'], [-1])

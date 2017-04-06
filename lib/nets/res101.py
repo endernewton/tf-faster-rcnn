@@ -133,6 +133,7 @@ class Resnet101(Network):
                                       global_pool=False,
                                       include_root_block=False,
                                       scope='resnet_v1_101')
+      
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net_conv5, _ = resnet_v1.resnet_v1(net,
                                               blocks[cfg.RESNET.FIXED_BLOCKS:-1],
@@ -153,7 +154,7 @@ class Resnet101(Network):
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
       # build the anchors for the image
-      self._anchor_component()
+      self._anchor_component(net_conv5)
 
       # rpn
       rpn = slim.conv2d(net_conv5, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
