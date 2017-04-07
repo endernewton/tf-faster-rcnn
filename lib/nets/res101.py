@@ -33,20 +33,21 @@ from tensorflow.contrib.layers.python.layers import initializers
 from tensorflow.contrib.layers.python.layers import layers
 from model.config import cfg
 
+
 def resnet_arg_scope(is_training=True,
                      weight_decay=cfg.TRAIN.WEIGHT_DECAY,
                      batch_norm_decay=0.997,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
   batch_norm_params = {
-      # NOTE 'is_training' here does not work because inside resnet it gets reset:
-      # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L187
-      'is_training': False,
-      'decay': batch_norm_decay,
-      'epsilon': batch_norm_epsilon,
-      'scale': batch_norm_scale,
-      'trainable': cfg.RESNET.BN_TRAIN,
-      'updates_collections': ops.GraphKeys.UPDATE_OPS
+    # NOTE 'is_training' here does not work because inside resnet it gets reset:
+    # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L187
+    'is_training': False,
+    'decay': batch_norm_decay,
+    'epsilon': batch_norm_epsilon,
+    'scale': batch_norm_scale,
+    'trainable': cfg.RESNET.BN_TRAIN,
+    'updates_collections': ops.GraphKeys.UPDATE_OPS
   }
 
   with arg_scope(
@@ -59,6 +60,7 @@ def resnet_arg_scope(is_training=True,
       normalizer_params=batch_norm_params):
     with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
       return arg_sc
+
 
 class Resnet101(Network):
   def __init__(self, batch_size=1):
@@ -80,10 +82,12 @@ class Resnet101(Network):
       bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
       if cfg.RESNET.MAX_POOL:
         pre_pool_size = cfg.POOLING_SIZE * 2
-        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
+        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size],
+                                         name="crops")
         crops = slim.max_pool2d(crops, [2, 2], padding='SAME')
       else:
-        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE], name="crops")
+        crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE],
+                                         name="crops")
 
     return crops
 
@@ -116,38 +120,38 @@ class Resnet101(Network):
                          [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
       resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
     ]
-    assert(cfg.RESNET.FIXED_BLOCKS < 4 and cfg.RESNET.FIXED_BLOCKS >= 0)
+    assert (0 <= cfg.RESNET.FIXED_BLOCKS < 4)
     if cfg.RESNET.FIXED_BLOCKS == 3:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net = self.build_base()
         net_conv5, _ = resnet_v1.resnet_v1(net,
-                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                      global_pool=False,
-                                      include_root_block=False,
-                                      scope='resnet_v1_101')
+                                           blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                           global_pool=False,
+                                           include_root_block=False,
+                                           scope='resnet_v1_101')
     elif cfg.RESNET.FIXED_BLOCKS > 0:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net = self.build_base()
         net, _ = resnet_v1.resnet_v1(net,
-                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                      global_pool=False,
-                                      include_root_block=False,
-                                      scope='resnet_v1_101')
+                                     blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                     global_pool=False,
+                                     include_root_block=False,
+                                     scope='resnet_v1_101')
 
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net_conv5, _ = resnet_v1.resnet_v1(net,
-                                              blocks[cfg.RESNET.FIXED_BLOCKS:-1],
-                                              global_pool=False,
-                                              include_root_block=False,
-                                              scope='resnet_v1_101')
-    else: # cfg.RESNET.FIXED_BLOCKS == 0
+                                           blocks[cfg.RESNET.FIXED_BLOCKS:-1],
+                                           global_pool=False,
+                                           include_root_block=False,
+                                           scope='resnet_v1_101')
+    else:  # cfg.RESNET.FIXED_BLOCKS == 0
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net = self.build_base()
         net_conv5, _ = resnet_v1.resnet_v1(net,
-                                              blocks[0:-1],
-                                              global_pool=False,
-                                              include_root_block=False,
-                                              scope='resnet_v1_101')
+                                           blocks[0:-1],
+                                           global_pool=False,
+                                           include_root_block=False,
+                                           scope='resnet_v1_101')
 
     self._act_summaries.append(net_conv5)
     self._layers['conv5_3'] = net_conv5
@@ -160,14 +164,14 @@ class Resnet101(Network):
       rpn = slim.conv2d(net_conv5, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
                         scope="rpn_conv/3x3")
       self._act_summaries.append(rpn)
-      rpn_cls_score = slim.conv2d(rpn, self._num_scales * 6, [1, 1], trainable=is_training,
+      rpn_cls_score = slim.conv2d(rpn, self._num_anchors * 2, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
                                   padding='VALID', activation_fn=None, scope='rpn_cls_score')
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
-      rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_scales * 6, "rpn_cls_prob")
-      rpn_bbox_pred = slim.conv2d(rpn, self._num_scales * 12, [1, 1], trainable=is_training,
+      rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
+      rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
                                   padding='VALID', activation_fn=None, scope='rpn_bbox_pred')
       if is_training:
@@ -192,21 +196,21 @@ class Resnet101(Network):
 
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
       fc7, _ = resnet_v1.resnet_v1(pool5,
-                                    blocks[-1:],
-                                    global_pool=False,
-                                    include_root_block=False,
-                                    scope='resnet_v1_101')
+                                   blocks[-1:],
+                                   global_pool=False,
+                                   include_root_block=False,
+                                   scope='resnet_v1_101')
 
     with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
                            regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
       # Average pooling done by reduce_mean
-      fc7 = tf.reduce_mean(fc7, axis=[1,2])
-      cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
-                              activation_fn=None, scope='cls_score')
+      fc7 = tf.reduce_mean(fc7, axis=[1, 2])
+      cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,
+                                       trainable=is_training, activation_fn=None, scope='cls_score')
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
-                              trainable=is_training, 
-                              activation_fn=None, scope='bbox_pred')
+                                       trainable=is_training,
+                                       activation_fn=None, scope='bbox_pred')
     self._predictions["rpn_cls_score"] = rpn_cls_score
     self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
     self._predictions["rpn_cls_prob"] = rpn_cls_prob
@@ -219,4 +223,3 @@ class Resnet101(Network):
     self._score_summaries.update(self._predictions)
 
     return rois, cls_prob, bbox_pred
-

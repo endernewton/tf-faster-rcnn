@@ -65,14 +65,14 @@ class vgg16(Network):
       # rpn
       rpn = slim.conv2d(net, 512, [3, 3], trainable=is_training, weights_initializer=initializer, scope="rpn_conv/3x3")
       self._act_summaries.append(rpn)
-      rpn_cls_score = slim.conv2d(rpn, self._num_scales * 6, [1, 1], trainable=is_training,
+      rpn_cls_score = slim.conv2d(rpn, self._num_anchors * 2, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
                                   padding='VALID', activation_fn=None, scope='rpn_cls_score')
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
-      rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_scales * 6, "rpn_cls_prob")
-      rpn_bbox_pred = slim.conv2d(rpn, self._num_scales * 12, [1, 1], trainable=is_training,
+      rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
+      rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
                                   padding='VALID', activation_fn=None, scope='rpn_bbox_pred')
       if is_training:
@@ -102,12 +102,13 @@ class vgg16(Network):
       fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
       if is_training:
         fc7 = slim.dropout(fc7, scope='dropout7')
-      cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer, trainable=is_training,
-                              activation_fn=None, scope='cls_score')
+      cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,
+                                       trainable=is_training,
+                                       activation_fn=None, scope='cls_score')
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
-                              trainable=is_training,
-                              activation_fn=None, scope='bbox_pred')
+                                       trainable=is_training,
+                                       activation_fn=None, scope='bbox_pred')
 
       self._predictions["rpn_cls_score"] = rpn_cls_score
       self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
@@ -121,4 +122,3 @@ class vgg16(Network):
       self._score_summaries.update(self._predictions)
 
       return rois, cls_prob, bbox_pred
-
