@@ -10,7 +10,6 @@ from __future__ import print_function
 
 import numpy as np
 
-
 def bbox_transform(ex_rois, gt_rois):
   ex_widths = ex_rois[:, 2] - ex_rois[:, 0] + 1.0
   ex_heights = ex_rois[:, 3] - ex_rois[:, 1] + 1.0

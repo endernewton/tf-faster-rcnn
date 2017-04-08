@@ -4,18 +4,17 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. 
+We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. Due to the randomness in GPU training with Tensorflow, the best numbers are reported (with 2-3 attempts) here, and all corresponding models are released.
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.2**.
-  - Train on COCO 2014 [trainval-minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
+  - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
   
 With Resnet101 (last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **75.1**. 
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **78.9**.
   
-
 **Note**:
   - The VGG16 numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
@@ -31,9 +30,9 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   - **Support for visualization**. The current implementation will summarize statistics of losses, activations and variables during training, and dump it to a separate folder for tensorboard visualization. The computing graph is also saved for debugging.
 
 ### Prerequisites
-  - A basic Tensorflow installation. The code follows **r1.0** format now. The released model follows the r0.12 format. If you are using an order version (r0.1-r0.12), please check out the v0.12 release. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
+  - A basic Tensorflow installation. The code follows **r1.0** format now. If you are using an order version (r0.1-r0.12), please check out the v0.12 release. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
   - Python packages you might not have: `cython`, `python-opencv`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
-  - Docker users: A Docker image containing all of the required dependencies can be found in Docker hub at mbuckler/tf-faster-rcnn-deps. The Docker file used to create this image can be found in the docker directory of this repository.
+  - Docker users: A Docker image containing all of the required dependencies can be found in Docker hub at the ``docker`` folder. The Docker file used to create this image can be found in the docker directory of this repository.
 
 ### Installation
 1. Clone the repository
@@ -202,7 +201,9 @@ For convenience, here is the faster RCNN citation:
         Year = {2015}
     }
 
-### Detailed Numbers
+### Detailed Numbers from COCO server
+
+All the models are trained on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models).
 
 VGG16 COCO 2015 test-dev (900k/1190k):
 ```

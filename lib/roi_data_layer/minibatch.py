@@ -16,7 +16,6 @@ import cv2
 from model.config import cfg
 from utils.blob import prep_im_for_blob, im_list_to_blob
 
-
 def get_minibatch(roidb, num_classes):
   """Given a roidb, construct a minibatch sampled from it."""
   num_images = len(roidb)
