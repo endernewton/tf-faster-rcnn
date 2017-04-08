@@ -9,7 +9,7 @@ We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architectu
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.2**.
-  - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (longer), **29.5**. 
+  - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**. 
   
 With Resnet101 (last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **75.1**. 
@@ -95,8 +95,18 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   **Note**: if you cannot download the models through the link. You can check out the following solutions:
   - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
   - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
-  
-2. Demo for testing on custom images (VGG16, VOC)
+
+2. Create a folder and a softlink to use the pretrained model
+  ```Shell
+  NET=vgg16_depre
+  mkdir -p output/${NET}
+  cd output/${NET}
+  ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
+  ln -s ../../data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival ./
+  cd ../..
+  ```
+
+3. Demo for testing on custom images (VGG16, VOC)
   ```Shell
   # at reposistory root
   GPU_ID=0
@@ -111,16 +121,6 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
   ```
 
-3. Create a folder and a softlink to use the pretrained model
-  ```Shell
-  NET=vgg16_depre
-  mkdir -p output/${NET}
-  cd output/${NET}
-  ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
-  ln -s ../../data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival ./
-  cd ../..
-  ```
-
 4. Test with pre-trained VGG16 models
   ```Shell
   GPU_ID=0
@@ -128,7 +128,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_vgg16.sh $GPU_ID coco
   ```
 
-### Train your own model (new)  
+### Train your own model
 1. Train (and test, evaluation)
   ```Shell
   ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
@@ -201,7 +201,7 @@ For convenience, here is the faster RCNN citation:
         Year = {2015}
     }
 
-### Detailed Numbers from COCO server
+### Detailed numbers from COCO server
 
 All the models are trained on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models).
 
