@@ -12,7 +12,7 @@ from model.bbox_transform import bbox_transform_inv, clip_boxes
 import numpy.random as npr
 
 
-def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, anchor_scales=(4,8,16), anchor_ratios=(0.5,1,2)):
+def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, anchor_scales=(8,16,32), anchor_ratios=(0.5,1,2)):
   """A layer that just selects the top region proposals
      without using non-maximal suppression,
      For details please see the technical report
