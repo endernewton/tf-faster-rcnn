@@ -15,7 +15,7 @@ from model.bbox_transform import bbox_transform_inv, clip_boxes
 from utils.cython_bbox import bbox_overlaps
 
 
-def generate_anchors_pre(height, width, feat_stride, anchor_scales, anchor_ratios):
+def generate_anchors_pre(height, width, feat_stride, anchor_scales=(8,16,32), anchor_ratios=(0.5,1,2)):
   """ A wrapper function to generate anchors given different scales
     Also return the number of anchors in variable 'length'
   """
