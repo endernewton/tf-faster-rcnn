@@ -4,7 +4,7 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. Due to the randomness in GPU training with Tensorflow, the best numbers are reported (with 2-3 attempts) here, and all corresponding models are released.
+We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. Due to the randomness in GPU training with Tensorflow, the best numbers are reported (with 1-3 attempts) here, and all models are released.
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
@@ -12,14 +12,15 @@ With VGG16 (``conv5_3``):
   - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**. 
   
 With Resnet101 (last ``conv4``):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **75.1**. 
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **78.9**.
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.1**.
+  - Train on COCO 2014 trainval35k and test on minival (900k/1290k), **34.0**. 
   
 **Note**:
-  - The VGG16 numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.3 - 0.4 AP). 
+  - **All** the numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.X AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
-  - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and exclude ground truth boxes in RoIs during training.
-  - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. 
+  - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and excluding ground truth boxes in RoIs during training.
+  - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5; Resnet101 350k/490k: 31.0, 600k/790k: 32.6, 900k/1290k: 34.0), and potentially better performance can be achieved with even more iterations. 
   - For Resnet101, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool. The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled. 
   - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet101 ones.
 
