@@ -6,21 +6,18 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
 import numpy as np
 from model.config import cfg
 from model.bbox_transform import bbox_transform_inv, clip_boxes
 import numpy.random as npr
 
-
-def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, anchor_scales=(8,16,32), anchor_ratios=(0.5,1,2)):
+def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, anchors, num_anchors):
   """A layer that just selects the top region proposals
      without using non-maximal suppression,
      For details please see the technical report
   """
   rpn_top_n = cfg.TEST.RPN_TOP_N
-  scales = np.array(anchor_scales)
-  ratios = np.array(anchor_ratios)
-  num_anchors = scales.shape[0] * ratios.shape[0]
   im_info = im_info[0]
 
   scores = rpn_cls_prob[:, :, :, num_anchors:]

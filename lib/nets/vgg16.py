@@ -11,18 +11,8 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from tensorflow.contrib.slim import losses
 from tensorflow.contrib.slim import arg_scope
-
 import numpy as np
 
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
-from layer_utils.snippets import generate_anchors_pre
-from layer_utils.proposal_layer import proposal_layer
-from layer_utils.proposal_top_layer import proposal_top_layer
-from layer_utils.anchor_target_layer import anchor_target_layer
-from layer_utils.proposal_target_layer import proposal_target_layer
 from nets.network import Network
 from model.config import cfg
 

@@ -14,10 +14,6 @@ from tensorflow.contrib.slim import arg_scope
 
 import numpy as np
 
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
 from layer_utils.snippets import generate_anchors_pre
 from layer_utils.proposal_layer import proposal_layer
 from layer_utils.proposal_top_layer import proposal_top_layer
@@ -99,7 +95,7 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_top_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info,
-                                     self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
+                                     self._feat_stride, self._anchors, self._num_anchors],
                                     [tf.float32, tf.float32])
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
@@ -110,7 +106,7 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
-                                     self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
+                                     self._feat_stride, self._anchors, self._num_anchors],
                                     [tf.float32, tf.float32])
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
@@ -150,7 +146,7 @@ class Network(object):
     with tf.variable_scope(name) as scope:
       rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(
         anchor_target_layer,
-        [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales, self._anchor_ratios],
+        [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._num_anchors],
         [tf.float32, tf.float32, tf.float32, tf.float32])
 
       rpn_labels.set_shape([1, 1, None, None])

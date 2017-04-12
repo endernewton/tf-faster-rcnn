@@ -94,8 +94,8 @@ if __name__ == '__main__':
     net = Resnet101(batch_size=1)
   else:
     raise NotImplementedError
-  # load model
 
+  # load model
   net.create_architecture(sess, "TEST", imdb.num_classes, tag='default',
                           anchor_scales=cfg.ANCHOR_SCALES,
                           anchor_ratios=cfg.ANCHOR_RATIOS)

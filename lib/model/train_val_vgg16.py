@@ -118,11 +118,14 @@ class SolverWrapper(object):
     sfiles = glob.glob(sfiles)
     sfiles.sort(key=os.path.getmtime)
     # Get the snapshot name in TensorFlow
+    redstr = '_iter_{:d}.'.format(cfg.TRAIN.STEPSIZE+1)
     sfiles = [ss.replace('.meta', '') for ss in sfiles]
+    sfiles = [ss for ss in sfiles if redstr not in ss]
 
     nfiles = os.path.join(self.output_dir, cfg.TRAIN.SNAPSHOT_PREFIX + '_iter_*.pkl')
     nfiles = glob.glob(nfiles)
     nfiles.sort(key=os.path.getmtime)
+    nfiles = [nn for nn in nfiles if redstr not in nn]
 
     lsf = len(sfiles)
     assert len(nfiles) == lsf

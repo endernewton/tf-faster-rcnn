@@ -15,15 +15,6 @@ from tensorflow.contrib.slim.python.slim.nets import resnet_utils
 from tensorflow.contrib.slim.python.slim.nets import resnet_v1
 import numpy as np
 
-try:
-  import cPickle as pickle
-except ImportError:
-  import pickle
-from layer_utils.snippets import generate_anchors_pre
-from layer_utils.proposal_layer import proposal_layer
-from layer_utils.proposal_top_layer import proposal_top_layer
-from layer_utils.anchor_target_layer import anchor_target_layer
-from layer_utils.proposal_target_layer import proposal_target_layer
 from nets.network import Network
 from tensorflow.python.framework import ops
 from tensorflow.contrib.layers.python.layers import regularizers
@@ -31,7 +22,6 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.contrib.layers.python.layers import initializers
 from tensorflow.contrib.layers.python.layers import layers
 from model.config import cfg
-
 
 def resnet_arg_scope(is_training=True,
                      weight_decay=cfg.TRAIN.WEIGHT_DECAY,

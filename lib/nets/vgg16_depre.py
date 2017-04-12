@@ -197,7 +197,7 @@ class vgg16(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_top_layer,
                                 [rpn_cls_prob, rpn_bbox_pred, self._im_info, 
-                                self._feat_stride, self._anchors, self._anchor_scales], [tf.float32, tf.float32])
+                                self._feat_stride, self._anchors, self._num_anchors], [tf.float32, tf.float32])
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
 
@@ -207,7 +207,7 @@ class vgg16(object):
     with tf.variable_scope(name) as scope:
       rois, rpn_scores = tf.py_func(proposal_layer,
                                 [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode, 
-                                self._feat_stride, self._anchors, self._anchor_scales], [tf.float32, tf.float32])
+                                self._feat_stride, self._anchors, self._num_anchors], [tf.float32, tf.float32])
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
 
@@ -242,7 +242,7 @@ class vgg16(object):
   def _anchor_target_layer(self, rpn_cls_score, name):
     with tf.variable_scope(name) as scope:
       rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(anchor_target_layer, 
-                          [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._anchor_scales], 
+                          [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._num_anchors], 
                           [tf.float32, tf.float32, tf.float32, tf.float32])
 
       rpn_labels.set_shape([1, 1, None, None])
@@ -460,7 +460,7 @@ class vgg16(object):
 
   def create_architecture(self, sess, mode, num_classes, 
                           caffe_weight_path=None, 
-                          tag=None, anchor_scales=[8, 16, 32]):
+                          tag=None, anchor_scales=(8, 16, 32)):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
     self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
     self._gt_boxes = tf.placeholder(tf.float32, shape=[None, 5])
@@ -471,6 +471,11 @@ class vgg16(object):
     self._mode = mode
     self._anchor_scales = anchor_scales
     self._num_scales = len(anchor_scales)
+
+    self._anchor_ratios = (0.5, 1, 2)
+    self._num_ratios = len(self._anchor_ratios)
+
+    self._num_anchors = self._num_scales * self._num_ratios
 
     training = mode == 'TRAIN'
     testing = mode == 'TEST'
