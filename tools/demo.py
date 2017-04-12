@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     # model path
     demonet = args.demo_net
-    dataset = dataset
+    dataset = args.dataset
     tfmodel = os.path.join('../output',demonet,DATASETS[dataset][0], 'default',
                               NETS[demonet][0])
 
