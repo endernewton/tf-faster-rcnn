@@ -27,7 +27,7 @@ import numpy as np
 import os, cv2
 import argparse
 
-from nets.vgg16_depre import vgg16
+from nets.vgg16 import vgg16
 from nets.res101 import Resnet101
 
 CLASSES = ('__background__',
