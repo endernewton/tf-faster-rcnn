@@ -18,7 +18,7 @@ With Resnet101 (last ``conv4``):
   - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) baseline setup (900k/1290k), **35.8**. 
   
 **Note**:
-  - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. For COCO you can almost always get the same number despite the randomness.
+  - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get the a very close number (within 0.2%) despite the randomness.
   - **All** the numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.X AP). 
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and excluding ground truth boxes in RoIs during training.
@@ -118,7 +118,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```
   **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).
 
-  Demo with Resnet if you have downloaded those and placed them in the proper locations:
+  Demo with Resnet (experimental) if you have downloaded those and placed them in the proper locations:
    ```Shell
   # at reposistory root
   GPU_ID=1
