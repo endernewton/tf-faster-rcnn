@@ -15,7 +15,7 @@ With Resnet101 (last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.1**.
   - Train on COCO 2014 trainval35k and test on minival (900k/1290k), **34.0**. 
-  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) baseline setup (900k/1290k), **35.8**. 
+  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) **baseline** [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
   
 **Note**:
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within 0.2%) despite the randomness.
