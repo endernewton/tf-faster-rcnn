@@ -22,7 +22,6 @@ from layer_utils.proposal_target_layer import proposal_target_layer
 
 from model.config import cfg
 
-
 class Network(object):
   def __init__(self, batch_size=1):
     self._feat_stride = [16, ]
@@ -211,8 +210,8 @@ class Network(object):
     in_box_diff = bbox_inside_weights * box_diff
     abs_in_box_diff = tf.abs(in_box_diff)
     smoothL1_sign = tf.stop_gradient(tf.to_float(tf.less(abs_in_box_diff, 1. / sigma_2)))
-    in_loss_box = tf.pow(in_box_diff, 2) * (sigma_2 / 2.0) * smoothL1_sign \
-                  + (abs_in_box_diff - (0.5 / sigma_2)) * (1.0 - smoothL1_sign)
+    in_loss_box = tf.pow(in_box_diff, 2) * (sigma_2 / 2.) * smoothL1_sign \
+                  + (abs_in_box_diff - (0.5 / sigma_2)) * (1. - smoothL1_sign)
     out_loss_box = bbox_outside_weights * in_loss_box
     loss_box = tf.reduce_mean(tf.reduce_sum(
       out_loss_box,
@@ -290,12 +289,18 @@ class Network(object):
 
     assert tag != None
 
+    # handle most of the regularizers here
+    weights_regularizer = tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)
     if cfg.TRAIN.BIAS_DECAY:
-      biases_regularizer = None
+      biases_regularizer = weights_regularizer
     else:
       biases_regularizer = tf.no_regularizer
 
-    with arg_scope([slim.conv2d, slim.fully_connected], biases_regularizer=biases_regularizer, 
+    # list as many types of layers as possible, even if they are not used now
+    with arg_scope([slim.conv2d, slim.conv2d_in_plane, \
+                    slim.conv2d_transpose, slim.separable_conv2d, slim.fully_connected], 
+                    weights_regularizer=weights_regularizer,
+                    biases_regularizer=biases_regularizer, 
                     biases_initializer=tf.constant_initializer(0.0)): 
       rois, cls_prob, bbox_pred = self.build_network(sess, training)
 

@@ -3,12 +3,18 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen
 # --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 from model.config import cfg
 import roi_data_layer.roidb as rdl_roidb
 from roi_data_layer.layer import RoIDataLayer
 from utils.timer import Timer
-import cPickle
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
 import numpy as np
 import os
 import sys
@@ -44,7 +50,7 @@ class SolverWrapper(object):
     filename = cfg.TRAIN.SNAPSHOT_PREFIX + '_iter_{:d}'.format(iter) + '.ckpt'
     filename = os.path.join(self.output_dir, filename)
     self.saver.save(sess, filename)
-    print 'Wrote snapshot to: {:s}'.format(filename)
+    print('Wrote snapshot to: {:s}'.format(filename))
 
     # Also store some meta information, random state, etc.
     nfilename = cfg.TRAIN.SNAPSHOT_PREFIX + '_iter_{:d}'.format(iter) + '.pkl'
@@ -62,12 +68,12 @@ class SolverWrapper(object):
 
     # Dump the meta info
     with open(nfilename, 'wb') as fid:
-      cPickle.dump(st0, fid, cPickle.HIGHEST_PROTOCOL)
-      cPickle.dump(cur, fid, cPickle.HIGHEST_PROTOCOL)
-      cPickle.dump(perm, fid, cPickle.HIGHEST_PROTOCOL)
-      cPickle.dump(cur_val, fid, cPickle.HIGHEST_PROTOCOL)
-      cPickle.dump(perm_val, fid, cPickle.HIGHEST_PROTOCOL)
-      cPickle.dump(iter, fid, cPickle.HIGHEST_PROTOCOL)
+      pickle.dump(st0, fid, pickle.HIGHEST_PROTOCOL)
+      pickle.dump(cur, fid, pickle.HIGHEST_PROTOCOL)
+      pickle.dump(perm, fid, pickle.HIGHEST_PROTOCOL)
+      pickle.dump(cur_val, fid, pickle.HIGHEST_PROTOCOL)
+      pickle.dump(perm_val, fid, pickle.HIGHEST_PROTOCOL)
+      pickle.dump(iter, fid, pickle.HIGHEST_PROTOCOL)
 
     return filename, nfilename
 
@@ -135,13 +141,13 @@ class SolverWrapper(object):
 
     if lsf == 0:
       # Fresh train directly from VGG weights
-      print ('Loading initial model weights from {:s}').format(self.pretrained_model)
+      print(('Loading initial model weights from {:s}').format(self.pretrained_model))
       variables = tf.global_variables()
       # Only initialize the variables that were not initialized when the graph was built
       for vbs in self.net._initialized:
         variables.remove(vbs)
       sess.run(tf.variables_initializer(variables, name='init'))
-      print 'Loaded.'
+      print('Loaded.')
       sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
       last_snapshot_iter = 0
     else:
@@ -149,19 +155,19 @@ class SolverWrapper(object):
       ss_paths = [ss_paths[-1]]
       np_paths = [np_paths[-1]]
 
-      print ('Restorining model snapshots from {:s}').format(sfiles[-1])
+      print(('Restorining model snapshots from {:s}').format(sfiles[-1]))
       self.saver.restore(sess, str(sfiles[-1]))
-      print 'Restored.'
+      print('Restored.')
       # Needs to restore the other hyperparameters/states for training, (TODO xinlei) I have
       # tried my best to find the random states so that it can be recovered exactly
       # However the Tensorflow state is currently not available
       with open(str(nfiles[-1]), 'rb') as fid:
-        st0 = cPickle.load(fid)
-        cur = cPickle.load(fid)
-        perm = cPickle.load(fid)
-        cur_val = cPickle.load(fid)
-        perm_val = cPickle.load(fid)
-        last_snapshot_iter = cPickle.load(fid)
+        st0 = pickle.load(fid)
+        cur = pickle.load(fid)
+        perm = pickle.load(fid)
+        cur_val = pickle.load(fid)
+        perm_val = pickle.load(fid)
+        last_snapshot_iter = pickle.load(fid)
 
         np.random.set_state(st0)
         self.data_layer._cur = cur
@@ -211,7 +217,7 @@ class SolverWrapper(object):
         print('iter: %d / %d, total loss: %.6f\n >>> rpn_loss_cls: %.6f\n '
               '>>> rpn_loss_box: %.6f\n >>> loss_cls: %.6f\n >>> loss_box: %.6f\n >>> lr: %f' % \
               (iter, max_iters, total_loss, rpn_loss_cls, rpn_loss_box, loss_cls, loss_box, lr.eval()))
-        print 'speed: {:.3f}s / iter'.format(timer.average_time)
+        print('speed: {:.3f}s / iter'.format(timer.average_time))
 
       if iter % cfg.TRAIN.SNAPSHOT_ITERS == 0:
         last_snapshot_iter = iter
@@ -253,13 +259,13 @@ class SolverWrapper(object):
 def get_training_roidb(imdb):
   """Returns a roidb (Region of Interest database) for use in training."""
   if cfg.TRAIN.USE_FLIPPED:
-    print 'Appending horizontally-flipped training examples...'
+    print('Appending horizontally-flipped training examples...')
     imdb.append_flipped_images()
-    print 'done'
+    print('done')
 
-  print 'Preparing training data...'
+  print('Preparing training data...')
   rdl_roidb.prepare_roidb(imdb)
-  print 'done'
+  print('done')
 
   return imdb.roidb
 
@@ -283,8 +289,8 @@ def filter_roidb(roidb):
   num = len(roidb)
   filtered_roidb = [entry for entry in roidb if is_valid(entry)]
   num_after = len(filtered_roidb)
-  print 'Filtered {} roidb entries: {} -> {}'.format(num - num_after,
-                                                     num, num_after)
+  print('Filtered {} roidb entries: {} -> {}'.format(num - num_after,
+                                                     num, num_after))
   return filtered_roidb
 
 def train_net(network, imdb, roidb, valroidb, output_dir, tb_dir,
@@ -300,6 +306,6 @@ def train_net(network, imdb, roidb, valroidb, output_dir, tb_dir,
   with tf.Session(config=tfconfig) as sess:
     sw = SolverWrapper(sess, network, imdb, roidb, valroidb, output_dir, tb_dir,
                       pretrained_model=pretrained_model)
-    print 'Solving...'
+    print('Solving...')
     sw.train_model(sess, max_iters)
-    print 'done solving'
+    print('done solving')

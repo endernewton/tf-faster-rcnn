@@ -16,15 +16,13 @@ import numpy as np
 from nets.network import Network
 from model.config import cfg
 
-
 class vgg16(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
     self._arch = 'vgg16'
 
   def build_network(self, sess, is_training=True):
-    with tf.variable_scope('vgg_16', 'vgg_16',
-                           regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
+    with tf.variable_scope('vgg_16', 'vgg_16'):
       # select initializers
       if cfg.TRAIN.TRUNCATED:
         initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
@@ -88,15 +86,17 @@ class vgg16(Network):
       pool5_flat = slim.flatten(pool5, scope='flatten')
       fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
       if is_training:
-        fc6 = slim.dropout(fc6, scope='dropout6')
+        fc6 = slim.dropout(fc6, keep_prob=0.5, is_training=True, scope='dropout6')
       fc7 = slim.fully_connected(fc6, 4096, scope='fc7')
       if is_training:
-        fc7 = slim.dropout(fc7, scope='dropout7')
-      cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,
+        fc7 = slim.dropout(fc7, keep_prob=0.5, is_training=True, scope='dropout7')
+      cls_score = slim.fully_connected(fc7, self._num_classes, 
+                                       weights_initializer=initializer,
                                        trainable=is_training,
                                        activation_fn=None, scope='cls_score')
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
-      bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
+      bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, 
+                                       weights_initializer=initializer_bbox,
                                        trainable=is_training,
                                        activation_fn=None, scope='bbox_pred')
 

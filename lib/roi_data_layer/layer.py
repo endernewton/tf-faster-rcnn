@@ -9,6 +9,9 @@
 
 RoIDataLayer implements a Caffe Python layer.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 from model.config import cfg
 from roi_data_layer.minibatch import get_minibatch

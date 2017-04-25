@@ -3,10 +3,16 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen
 # --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import cv2
 import numpy as np
-import cPickle
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
 import os
 import math
 
@@ -176,14 +182,14 @@ def test_net(sess, net, imdb, weights_filename, max_per_image=100, thresh=0.05):
           all_boxes[j][i] = all_boxes[j][i][keep, :]
     _t['misc'].toc()
 
-    print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+    print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
         .format(i + 1, num_images, _t['im_detect'].average_time,
-            _t['misc'].average_time)
+            _t['misc'].average_time))
 
   det_file = os.path.join(output_dir, 'detections.pkl')
   with open(det_file, 'wb') as f:
-    cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
+    pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
-  print 'Evaluating detections'
+  print('Evaluating detections')
   imdb.evaluate_detections(all_boxes, output_dir)
 

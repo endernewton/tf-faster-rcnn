@@ -3,8 +3,10 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen
 # --------------------------------------------------------
-
 # This is a deprecated version, included for the sake of loading old models
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -25,7 +27,7 @@ from model.config import cfg
 class vgg16(object):
   def __init__(self, batch_size=1):
     self._feat_stride = [16,]
-    self._feat_compress = [1./16.,]
+    self._feat_compress = [1. / 16.,]
     self._batch_size = batch_size
     self._predictions = {}
     self._losses={}
@@ -219,7 +221,7 @@ class vgg16(object):
       return tf.image.roi_pooling(bootom, rois,
                                     pooled_height=cfg.POOLING_SIZE,
                                     pooled_width=cfg.POOLING_SIZE,
-                                    spatial_scale=1./16)[0]
+                                    spatial_scale=1. / 16.)[0]
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
@@ -481,10 +483,10 @@ class vgg16(object):
     testing = mode == 'TEST'
 
     assert tag != None
-    print 'Loading caffe weights...'
+    print('Loading caffe weights...')
     with open(self._caffe_weight_path, 'r') as f:
       self._caffe_layers = pickle.load(f)
-    print 'Done!'
+    print('Done!')
 
     rois, cls_prob, bbox_pred = self._vgg16_from_imagenet(sess, training)
 

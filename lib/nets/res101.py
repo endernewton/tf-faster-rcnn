@@ -50,7 +50,6 @@ def resnet_arg_scope(is_training=True,
     with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
       return arg_sc
 
-
 class Resnet101(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
@@ -77,7 +76,6 @@ class Resnet101(Network):
       else:
         crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE],
                                          name="crops")
-
     return crops
 
   # Do the first few layers manually, because 'SAME' padding can behave inconsistently
@@ -144,8 +142,7 @@ class Resnet101(Network):
 
     self._act_summaries.append(net_conv5)
     self._layers['conv5_3'] = net_conv5
-    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
-                           regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
+    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
       # build the anchors for the image
       self._anchor_component()
 
@@ -190,8 +187,7 @@ class Resnet101(Network):
                                    include_root_block=False,
                                    scope='resnet_v1_101')
 
-    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101',
-                           regularizer=tf.contrib.layers.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY)):
+    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
       # Average pooling done by reduce_mean
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,

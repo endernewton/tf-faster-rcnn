@@ -3,6 +3,9 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xinlei Chen, based on code from Ross Girshick
 # --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import _init_paths
 from model.test_vgg16 import test_net
@@ -91,14 +94,14 @@ if __name__ == '__main__':
                           tag='default', anchor_scales=cfg.ANCHOR_SCALES)
 
   if args.model:
-    print ('Loading model check point from {:s}').format(args.model)
+    print(('Loading model check point from {:s}').format(args.model))
     saver = tf.train.Saver()
     saver.restore(sess, args.model)
-    print 'Loaded.'
+    print('Loaded.')
   else:
-    print ('Loading initial weights from {:s}').format(args.weight)
+    print(('Loading initial weights from {:s}').format(args.weight))
     sess.run(tf.global_variables_initializer())
-    print 'Loaded.'
+    print('Loaded.')
 
   test_net(sess, net, imdb, filename, max_per_image=args.max_per_image)
 
