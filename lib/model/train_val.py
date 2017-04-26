@@ -168,6 +168,10 @@ class SolverWrapper(object):
         if v.name == 'vgg_16/fc6/weights:0' or v.name == 'vgg_16/fc7/weights:0':
           var_to_dic[v.name] = v
           continue
+        # exclude the first conv layer to swap RGB to BGR
+        if v.name == 'vgg_16/conv1/conv1_1/weights:0' or v.name == 'resnet_v1_101/conv1/weights:0':
+          var_to_dic[v.name] = v
+          continue
         if v.name.split(':')[0] in var_keep_dic:
           print('Varibles restored: %s' % v.name)
           variables_to_restore.append(v)
@@ -176,20 +180,40 @@ class SolverWrapper(object):
       restorer.restore(sess, self.pretrained_model)
       print('Loaded.')
       sess.run(tf.assign(lr, cfg.TRAIN.LEARNING_RATE))
-      # A temporary solution to fix the vgg16 issue from conv weights to fc weights
       if self.net._arch == 'vgg16':
-        print('Converting VGG16 fc layers..')
+        print('Fix VGG16 layers..')
         with tf.variable_scope('Fix_VGG16') as scope:
           with tf.device("/cpu:0"):
+            # fix the vgg16 issue from conv weights to fc weights
+            # fix RGB to BGR
             fc6_conv = tf.get_variable("fc6_conv", [7, 7, 512, 4096], trainable=False)
             fc7_conv = tf.get_variable("fc7_conv", [1, 1, 4096, 4096], trainable=False)
-            restorer_fc = tf.train.Saver({"vgg_16/fc6/weights": fc6_conv, "vgg_16/fc7/weights": fc7_conv})
+            conv1_rgb = tf.get_variable("conv1_rgb", [3, 3, 3, 64], trainable=False)
+            restorer_fc = tf.train.Saver({"vgg_16/fc6/weights": fc6_conv, 
+                                          "vgg_16/fc7/weights": fc7_conv,
+                                          "vgg_16/conv1/conv1_1/weights": conv1_rgb})
             restorer_fc.restore(sess, self.pretrained_model)
 
             sess.run(tf.assign(var_to_dic['vgg_16/fc6/weights:0'], tf.reshape(fc6_conv, 
                                 var_to_dic['vgg_16/fc6/weights:0'].get_shape())))
             sess.run(tf.assign(var_to_dic['vgg_16/fc7/weights:0'], tf.reshape(fc7_conv, 
                                 var_to_dic['vgg_16/fc7/weights:0'].get_shape())))
+            sess.run(tf.assign(var_to_dic['vgg_16/conv1/conv1_1/weights:0'], 
+                                tf.reverse(conv1_rgb, [2])))
+      elif self.net._arch == 'res101':
+        print('Fix Resnet101 layers..')
+        with tf.variable_scope('Fix_Res101') as scope:
+          with tf.device("/cpu:0"):
+            # fix RGB to BGR
+            conv1_rgb = tf.get_variable("conv1_rgb", [7, 7, 3, 64], trainable=False)
+            restorer_fc = tf.train.Saver({"resnet_v1_101/conv1/weights": conv1_rgb})
+            restorer_fc.restore(sess, self.pretrained_model)
+
+            sess.run(tf.assign(var_to_dic['resnet_v1_101/conv1/weights:0'], tf.reverse(conv1_rgb, [2])))
+      else:
+        # every network should fix the rgb issue at least
+        raise NotImplementedError
+
       last_snapshot_iter = 0
     else:
       # Get the most recent snapshot and restore
