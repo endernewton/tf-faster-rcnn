@@ -8,7 +8,7 @@ We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architectu
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.2**.
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.3**.
   - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**. 
   
 With Resnet101 (**old results** last ``conv4``):
