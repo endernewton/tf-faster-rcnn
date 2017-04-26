@@ -11,11 +11,11 @@ With VGG16 (``conv5_3``):
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.2**.
   - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**. 
   
-With Resnet101 (last ``conv4``):
+With Resnet101 (**old results** last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.1**.
   - Train on COCO 2014 trainval35k and test on minival (900k/1290k), **34.0**. 
-  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) **baseline** [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
+  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
   
 **Note**:
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within 0.2%) despite the randomness.
@@ -34,7 +34,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   - **Support for visualization**. The current implementation will summarize statistics of losses, activations and variables during training, and dump it to a separate folder for tensorboard visualization. The computing graph is also saved for debugging.
 
 ### Prerequisites
-  - A basic Tensorflow installation. The code follows **r1.0** format now. If you are using an order version (r0.1-r0.12), please check out the v0.12 release. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
+  - A basic Tensorflow installation. The code follows **r1.0** format. If you are using an order version (r0.1-r0.12), please check out the v0.12 release. While it is not required, for experimenting the original RoI pooling (which requires modification of the C++ code in tensorflow), you can check out my tensorflow [fork](https://github.com/endernewton/tensorflow) and look for ``tf.image.roi_pooling``.
   - Python packages you might not have: `cython`, `opencv-python`, `easydict` (similar to [py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn)).
   - Docker users: A Docker image containing all of the required dependencies can be found in Docker hub at the ``docker`` folder. The Docker file used to create this image can be found in the docker directory of this repository.
 
@@ -183,7 +183,7 @@ tensorboard/[NET]/[DATASET]/default/
 tensorboard/[NET]/[DATASET]/default_val/
 ```
 
-The default number of training iterations is kept the same to the original faster RCNN for VOC 2007, however I find it is beneficial to train longer (see [report](https://arxiv.org/pdf/1702.02138.pdf) for COCO), probably due to the fact that the image batch size is 1. For VOC 07+12 we switch to a 80k/110k schedule following [R-FCN](https://github.com/daijifeng001/R-FCN). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers for VOC, and 0.2% of the reported numbers for COCO. *Right now there is hidden bug with VGG16 training at least, you will probably get ~0.5% lower on COCO; so if you want to reproduce results, please resort to the old training code (vgg16.sh) as a temporary solution. Resnet101 results are potentially trained with the bug so you can reproduce them with the new code. Testing results should not be affected.* Debuggers are welcome.
+The default number of training iterations is kept the same to the original faster RCNN for VOC 2007, however I find it is beneficial to train longer (see [report](https://arxiv.org/pdf/1702.02138.pdf) for COCO), probably due to the fact that the image batch size is 1. For VOC 07+12 we switch to a 80k/110k schedule following [R-FCN](https://github.com/daijifeng001/R-FCN). Also note that due to the nondeterministic nature of the current implementation, the performance can vary a bit, but in general it should be within 1% of the reported numbers for VOC, and 0.2% of the reported numbers for COCO. Suggestions/Contributions are welcome.
 
 ### Citation
 If you find this implementation or the analysis conducted in our report helpful, please consider citing:
