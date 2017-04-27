@@ -13,7 +13,7 @@ With VGG16 (``conv5_3``):
   
 With Resnet101 (last ``conv4``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **75.2**. 
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (*old*, R-FCN schedule), **79.3**.
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.3**.
   - Train on COCO 2014 trainval35k and test on minival (*old*, 900k/1290k), **34.0**. 
   - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (*old*, 900k/1290k), **35.8**. 
   
