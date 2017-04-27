@@ -16,7 +16,7 @@ from datasets.coco import coco
 
 import numpy as np
 
-# Set up voc_<year>_<split> using selective search "fast" mode
+# Set up voc_<year>_<split> 
 for year in ['2007', '2012']:
   for split in ['train', 'val', 'trainval', 'test']:
     name = 'voc_{}_{}'.format(year, split)

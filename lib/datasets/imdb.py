@@ -2,7 +2,7 @@
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
+# Written by Ross Girshick and Xinlei Chen
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ class imdb(object):
     else:
       self._classes = classes
     self._image_index = []
-    self._obj_proposer = 'selective_search'
+    self._obj_proposer = 'gt'
     self._roidb = None
     self._roidb_handler = self.default_roidb
     # Use this dict for storing dataset specific config options

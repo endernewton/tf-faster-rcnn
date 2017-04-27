@@ -2,7 +2,7 @@
 # Fast R-CNN
 # Copyright (c) 2015 Microsoft
 # Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
+# Written by Ross Girshick and Xinlei Chen
 # --------------------------------------------------------
 from __future__ import absolute_import
 from __future__ import division
@@ -41,7 +41,7 @@ class pascal_voc(imdb):
     self._image_ext = '.jpg'
     self._image_index = self._load_image_set_index()
     # Default to roidb handler
-    self._roidb_handler = self.selective_search_roidb
+    self._roidb_handler = self.gt_roidb
     self._salt = str(uuid.uuid4())
     self._comp_id = 'comp4'
 
@@ -50,8 +50,7 @@ class pascal_voc(imdb):
                    'use_salt': True,
                    'use_diff': False,
                    'matlab_eval': False,
-                   'rpn_file': None,
-                   'min_size': 2}
+                   'rpn_file': None}
 
     assert os.path.exists(self._devkit_path), \
       'VOCdevkit path does not exist: {}'.format(self._devkit_path)
@@ -118,34 +117,6 @@ class pascal_voc(imdb):
 
     return gt_roidb
 
-  def selective_search_roidb(self):
-    """
-    Return the database of selective search regions of interest.
-    Ground-truth ROIs are also included.
-
-    This function loads/saves from/to a cache file to speed up future calls.
-    """
-    cache_file = os.path.join(self.cache_path,
-                              self.name + '_selective_search_roidb.pkl')
-
-    if os.path.exists(cache_file):
-      with open(cache_file, 'rb') as fid:
-        roidb = pickle.load(fid)
-      print('{} ss roidb loaded from {}'.format(self.name, cache_file))
-      return roidb
-
-    if int(self._year) == 2007 or self._image_set != 'test':
-      gt_roidb = self.gt_roidb()
-      ss_roidb = self._load_selective_search_roidb(gt_roidb)
-      roidb = imdb.merge_roidbs(gt_roidb, ss_roidb)
-    else:
-      roidb = self._load_selective_search_roidb(None)
-    with open(cache_file, 'wb') as fid:
-      pickle.dump(roidb, fid, pickle.HIGHEST_PROTOCOL)
-    print('wrote ss roidb to {}'.format(cache_file))
-
-    return roidb
-
   def rpn_roidb(self):
     if int(self._year) == 2007 or self._image_set != 'test':
       gt_roidb = self.gt_roidb()
@@ -163,25 +134,6 @@ class pascal_voc(imdb):
       'rpn data not found at: {}'.format(filename)
     with open(filename, 'rb') as f:
       box_list = pickle.load(f)
-    return self.create_roidb_from_box_list(box_list, gt_roidb)
-
-  def _load_selective_search_roidb(self, gt_roidb):
-    filename = os.path.abspath(os.path.join(cfg.DATA_DIR,
-                                            'selective_search_data',
-                                            self.name + '.mat'))
-    assert os.path.exists(filename), \
-      'Selective search data not found at: {}'.format(filename)
-    raw_data = sio.loadmat(filename)['boxes'].ravel()
-
-    box_list = []
-    for i in range(raw_data.shape[0]):
-      boxes = raw_data[i][:, (1, 0, 3, 2)] - 1
-      keep = ds_utils.unique_boxes(boxes)
-      boxes = boxes[keep, :]
-      keep = ds_utils.filter_small_boxes(boxes, self.config['min_size'])
-      boxes = boxes[keep, :]
-      box_list.append(boxes)
-
     return self.create_roidb_from_box_list(box_list, gt_roidb)
 
   def _load_pascal_annotation(self, index):
