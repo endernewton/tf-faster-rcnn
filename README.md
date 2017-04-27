@@ -11,11 +11,11 @@ With VGG16 (``conv5_3``):
   - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.3**.
   - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**. 
   
-With Resnet101 (**old results** last ``conv4``):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **74.7**. 
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.1**.
-  - Train on COCO 2014 trainval35k and test on minival (900k/1290k), **34.0**. 
-  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
+With Resnet101 (last ``conv4``):
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **75.2**. 
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (*old*, R-FCN schedule), **79.1**.
+  - Train on COCO 2014 trainval35k and test on minival (*old*, 900k/1290k), **34.0**. 
+  - Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (*old*, 900k/1290k), **35.8**. 
   
 **Note**:
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within 0.2%) despite the randomness.
@@ -118,7 +118,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```
   **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).
 
-  Demo with Resnet (experimental) if you have downloaded those and placed them in the proper locations:
+  Demo with Resnet101 if you have downloaded those and placed them in the proper locations:
    ```Shell
   # at reposistory root
   GPU_ID=1
