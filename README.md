@@ -116,7 +116,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   GPU_ID=0
   CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo_depre.py 
   ```
-  **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25). If you cannot get the reported numbers, then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
+  **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).  
 
   Demo with Resnet101 if you have downloaded those and placed them in the proper locations:
    ```Shell
@@ -131,6 +131,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
   ./experiments/scripts/test_vgg16.sh $GPU_ID coco
   ```
+  **Note**: If you cannot get the reported numbers, then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
 
 ### Train your own model
 1. Train (and test, evaluation)
