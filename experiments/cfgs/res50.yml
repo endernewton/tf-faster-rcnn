@@ -11,7 +11,7 @@ TRAIN:
   BATCH_SIZE: 256
   WEIGHT_DECAY: 0.0001
   DOUBLE_BIAS: False
-  SNAPSHOT_PREFIX: res101_faster_rcnn
+  SNAPSHOT_PREFIX: res50_faster_rcnn
 TEST:
   HAS_RPN: True
 POOLING_MODE: crop

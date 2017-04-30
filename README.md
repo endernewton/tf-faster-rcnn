@@ -141,7 +141,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```Shell
   ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
-  # NET in {vgg16, res101} is the network arch to use
+  # NET in {vgg16, res50, res101, res152} is the network arch to use
   # DATASET {pascal_voc, coco} is defined in train_faster_rcnn.sh
   # Examples:
   ./experiments/scripts/train_faster_rcnn.sh 0 pascal_voc vgg16
@@ -158,7 +158,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ```Shell
   ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
-  # NET in {vgg16, res101} is the network arch to use
+  # NET in {vgg16, res50, res101, res152} is the network arch to use
   # DATASET {pascal_voc, coco} is defined in test_faster_rcnn.sh
   # Examples:
   ./experiments/scripts/test_faster_rcnn.sh 0 pascal_voc vgg16
