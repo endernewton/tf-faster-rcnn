@@ -169,10 +169,10 @@ class SolverWrapper(object):
           var_to_dic[v.name] = v
           continue
         # exclude the first conv layer to swap RGB to BGR
-        if v.name == 'vgg_16/conv1/conv1_1/weights:0' 
-           or v.name == 'resnet_v1_50/conv1/weights:0'
-           or v.name == 'resnet_v1_101/conv1/weights:0'
-           or v.name == 'resnet_v1_152/conv1/weights:0':
+        if v.name == 'vgg_16/conv1/conv1_1/weights:0' or \
+           v.name == 'resnet_v1_50/conv1/weights:0' or \
+           v.name == 'resnet_v1_101/conv1/weights:0' or \
+           v.name == 'resnet_v1_152/conv1/weights:0':
           var_to_dic[v.name] = v
           continue
         if v.name.split(':')[0] in var_keep_dic:

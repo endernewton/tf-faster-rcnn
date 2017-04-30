@@ -77,10 +77,15 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
    cd ../..
    ```
 
-5. Install the [Python COCO API](https://github.com/pdollar/coco). And create a symbolic link to it within ``tf-faster-rcnn/data``, The code requires the API to access COCO dataset.
+5. Install the [Python COCO API](https://github.com/pdollar/coco). The code requires the API to access COCO dataset.
+   ```Shell
+   cd data
+   git clone https://github.com/pdollar/coco.git
+   cd ..
+   ```
 
 ### Setup data
-Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets. The steps involve downloading data and creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
+Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets (Part of COCO is done). The steps involve downloading data and optionally creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
 
 If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
 
@@ -91,8 +96,6 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   cd ..
   # VGG16 for both voc and coco using default training scheme
   ./data/scripts/fetch_faster_rcnn_models.sh
-  # VGG16 for coco using longer training scheme (600k/790k)
-  ./data/scripts/fetch_coco_long_models.sh
   # VGG16 weights for imagenet pretrained model, extracted from released caffe model
   ./data/scripts/fetch_imagenet_weights.sh
   ```
