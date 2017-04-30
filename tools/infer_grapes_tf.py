@@ -192,7 +192,7 @@ if __name__ == '__main__':
     tfmodel = os.path.join('../output',demonet,DATASETS[dataset][0], 'default',
                               NETS[demonet][0])
 
-    bboxes_text_file = open(args.outfolder+'/bboxes.txt','w')#CAMBIADO
+    bboxes_text_file = open(args.outfolder+'/bboxes.txt','w') #Bboxes file
     if not os.path.isfile(tfmodel + '.meta'):
         raise IOError(('{:s} not found.\nDid you download the proper networks from '
                        'our server and place them properly? If you want something '
@@ -230,4 +230,4 @@ if __name__ == '__main__':
 
     for im_name in im_names:
         print ('Processing {} from {} and saving into {}'.format(im_name, args.imgfolder, args.outfolder))
-        process_image(sess,net, os.path.join(args.imgfolder, im_name), args.outfolder, bboxes_text_file) #CAMBIADO
+        process_image(sess,net, os.path.join(args.imgfolder, im_name), args.outfolder, bboxes_text_file) #Bboxes file
