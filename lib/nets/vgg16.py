@@ -46,7 +46,7 @@ class vgg16(Network):
       net = slim.repeat(net, 3, slim.conv2d, 512, [3, 3],
                         trainable=is_training, scope='conv5')
       self._act_summaries.append(net)
-      self._layers['conv5_3'] = net
+      self._layers['head'] = net
       # build the anchors for the image
       self._anchor_component()
 

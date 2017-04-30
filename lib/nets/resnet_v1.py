@@ -50,10 +50,12 @@ def resnet_arg_scope(is_training=True,
     with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
       return arg_sc
 
-class Resnet101(Network):
-  def __init__(self, batch_size=1):
+class resnetv1(Network):
+  def __init__(self, batch_size=1, num_layers=50):
     Network.__init__(self, batch_size=batch_size)
-    self._arch = 'res101'
+    self._num_layers = num_layers
+    self._arch = 'res_v1_%d' % num_layers
+    self._resnet_scope = 'resnet_v1_%d' % num_layers
 
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
@@ -81,7 +83,7 @@ class Resnet101(Network):
   # Do the first few layers manually, because 'SAME' padding can behave inconsistently
   # for images of different sizes: sometimes 0, sometimes 1
   def build_base(self):
-    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
+    with tf.variable_scope(self._resnet_scope, self._resnet_scope):
       net = resnet_utils.conv2d_same(self._image, 64, 7, stride=2, scope='conv1')
       net = tf.pad(net, [[0, 0], [1, 1], [1, 1], [0, 0]])
       net = slim.max_pool2d(net, [3, 3], stride=2, padding='VALID', scope='pool1')
@@ -97,25 +99,53 @@ class Resnet101(Network):
       initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
       initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
     bottleneck = resnet_v1.bottleneck
-    blocks = [
-      resnet_utils.Block('block1', bottleneck,
-                         [(256, 64, 1)] * 2 + [(256, 64, 2)]),
-      resnet_utils.Block('block2', bottleneck,
-                         [(512, 128, 1)] * 3 + [(512, 128, 2)]),
-      # Use stride-1 for the last conv4 layer
-      resnet_utils.Block('block3', bottleneck,
-                         [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
-      resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
-    ]
+    # choose different blocks for different number of layers
+    if self._num_layers == 50:
+      blocks = [
+        resnet_utils.Block('block1', bottleneck,
+                           [(256, 64, 1)] * 2 + [(256, 64, 2)]),
+        resnet_utils.Block('block2', bottleneck,
+                           [(512, 128, 1)] * 3 + [(512, 128, 2)]),
+        # Use stride-1 for the last conv4 layer
+        resnet_utils.Block('block3', bottleneck,
+                           [(1024, 256, 1)] * 5 + [(1024, 256, 1)]),
+        resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
+      ]
+    elif self._num_layers == 101:
+      blocks = [
+        resnet_utils.Block('block1', bottleneck,
+                           [(256, 64, 1)] * 2 + [(256, 64, 2)]),
+        resnet_utils.Block('block2', bottleneck,
+                           [(512, 128, 1)] * 3 + [(512, 128, 2)]),
+        # Use stride-1 for the last conv4 layer
+        resnet_utils.Block('block3', bottleneck,
+                           [(1024, 256, 1)] * 22 + [(1024, 256, 1)]),
+        resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
+      ]
+    elif self._num_layers == 152:
+      blocks = [
+        resnet_utils.Block('block1', bottleneck,
+                           [(256, 64, 1)] * 2 + [(256, 64, 2)]),
+        resnet_utils.Block('block2', bottleneck,
+                           [(512, 128, 1)] * 7 + [(512, 128, 2)]),
+        # Use stride-1 for the last conv4 layer
+        resnet_utils.Block('block3', bottleneck,
+                           [(1024, 256, 1)] * 35 + [(1024, 256, 1)]),
+        resnet_utils.Block('block4', bottleneck, [(2048, 512, 1)] * 3)
+      ]
+    else:
+      # other numbers are not supported
+      raise NotImplementedError
+
     assert (0 <= cfg.RESNET.FIXED_BLOCKS < 4)
     if cfg.RESNET.FIXED_BLOCKS == 3:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net = self.build_base()
-        net_conv5, _ = resnet_v1.resnet_v1(net,
+        net_conv4, _ = resnet_v1.resnet_v1(net,
                                            blocks[0:cfg.RESNET.FIXED_BLOCKS],
                                            global_pool=False,
                                            include_root_block=False,
-                                           scope='resnet_v1_101')
+                                           scope=self._resnet_scope)
     elif cfg.RESNET.FIXED_BLOCKS > 0:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net = self.build_base()
@@ -123,31 +153,31 @@ class Resnet101(Network):
                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
                                      global_pool=False,
                                      include_root_block=False,
-                                     scope='resnet_v1_101')
+                                     scope=self._resnet_scope)
 
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-        net_conv5, _ = resnet_v1.resnet_v1(net,
+        net_conv4, _ = resnet_v1.resnet_v1(net,
                                            blocks[cfg.RESNET.FIXED_BLOCKS:-1],
                                            global_pool=False,
                                            include_root_block=False,
-                                           scope='resnet_v1_101')
+                                           scope=self._resnet_scope)
     else:  # cfg.RESNET.FIXED_BLOCKS == 0
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net = self.build_base()
-        net_conv5, _ = resnet_v1.resnet_v1(net,
+        net_conv4, _ = resnet_v1.resnet_v1(net,
                                            blocks[0:-1],
                                            global_pool=False,
                                            include_root_block=False,
-                                           scope='resnet_v1_101')
+                                           scope=self._resnet_scope)
 
-    self._act_summaries.append(net_conv5)
-    self._layers['conv5_3'] = net_conv5
-    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
+    self._act_summaries.append(net_conv4)
+    self._layers['head'] = net_conv4
+    with tf.variable_scope(self._resnet_scope, self._resnet_scope):
       # build the anchors for the image
       self._anchor_component()
 
       # rpn
-      rpn = slim.conv2d(net_conv5, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
+      rpn = slim.conv2d(net_conv4, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
                         scope="rpn_conv/3x3")
       self._act_summaries.append(rpn)
       rpn_cls_score = slim.conv2d(rpn, self._num_anchors * 2, [1, 1], trainable=is_training,
@@ -176,7 +206,7 @@ class Resnet101(Network):
 
       # rcnn
       if cfg.POOLING_MODE == 'crop':
-        pool5 = self._crop_pool_layer(net_conv5, rois, "pool5")
+        pool5 = self._crop_pool_layer(net_conv4, rois, "pool5")
       else:
         raise NotImplementedError
 
@@ -185,9 +215,9 @@ class Resnet101(Network):
                                    blocks[-1:],
                                    global_pool=False,
                                    include_root_block=False,
-                                   scope='resnet_v1_101')
+                                   scope=self._resnet_scope)
 
-    with tf.variable_scope('resnet_v1_101', 'resnet_v1_101'):
+    with tf.variable_scope(self._resnet_scope, self._resnet_scope):
       # Average pooling done by reduce_mean
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,

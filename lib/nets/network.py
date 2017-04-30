@@ -337,10 +337,11 @@ class Network(object):
 
     return layers_to_output
 
+  # Extract the head feature maps, for example for vgg16 it is conv5_3
   # only useful during testing mode
-  def extract_conv5(self, sess, image):
+  def extract_head(self, sess, image):
     feed_dict = {self._image: image}
-    feat = sess.run(self._layers["conv5_3"], feed_dict=feed_dict)
+    feat = sess.run(self._layers["head"], feed_dict=feed_dict)
     return feat
 
   # only useful during testing mode

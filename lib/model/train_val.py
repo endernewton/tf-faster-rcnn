@@ -169,7 +169,10 @@ class SolverWrapper(object):
           var_to_dic[v.name] = v
           continue
         # exclude the first conv layer to swap RGB to BGR
-        if v.name == 'vgg_16/conv1/conv1_1/weights:0' or v.name == 'resnet_v1_101/conv1/weights:0':
+        if v.name == 'vgg_16/conv1/conv1_1/weights:0' 
+           or v.name == 'resnet_v1_50/conv1/weights:0'
+           or v.name == 'resnet_v1_101/conv1/weights:0'
+           or v.name == 'resnet_v1_152/conv1/weights:0':
           var_to_dic[v.name] = v
           continue
         if v.name.split(':')[0] in var_keep_dic:
@@ -200,16 +203,16 @@ class SolverWrapper(object):
                                 var_to_dic['vgg_16/fc7/weights:0'].get_shape())))
             sess.run(tf.assign(var_to_dic['vgg_16/conv1/conv1_1/weights:0'], 
                                 tf.reverse(conv1_rgb, [2])))
-      elif self.net._arch == 'res101':
-        print('Fix Resnet101 layers..')
-        with tf.variable_scope('Fix_Res101') as scope:
+      elif self.net._arch.startswith('res_v1'):
+        print('Fix Resnet V1 layers..')
+        with tf.variable_scope('Fix_Resnet_V1') as scope:
           with tf.device("/cpu:0"):
             # fix RGB to BGR
             conv1_rgb = tf.get_variable("conv1_rgb", [7, 7, 3, 64], trainable=False)
-            restorer_fc = tf.train.Saver({"resnet_v1_101/conv1/weights": conv1_rgb})
+            restorer_fc = tf.train.Saver({self.net._resnet_scope + "/conv1/weights": conv1_rgb})
             restorer_fc.restore(sess, self.pretrained_model)
 
-            sess.run(tf.assign(var_to_dic['resnet_v1_101/conv1/weights:0'], tf.reverse(conv1_rgb, [2])))
+            sess.run(tf.assign(var_to_dic[self.net._resnet_scope + '/conv1/weights:0'], tf.reverse(conv1_rgb, [2])))
       else:
         # every network should fix the rgb issue at least
         raise NotImplementedError

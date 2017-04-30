@@ -19,7 +19,7 @@ import sys
 
 import tensorflow as tf
 from nets.vgg16 import vgg16
-from nets.res101 import Resnet101
+from nets.resnet_v1 import resnetv1
 
 def parse_args():
   """
@@ -45,8 +45,8 @@ def parse_args():
                       help='tag of the model',
                       default=None, type=str)
   parser.add_argument('--net', dest='net',
-                      help='vgg16 or res101',
-                      default='res101', type=str)
+                      help='vgg16, res50, res101, res152',
+                      default='res50', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                       help='set config keys', default=None,
                       nargs=argparse.REMAINDER)
@@ -119,10 +119,15 @@ if __name__ == '__main__':
   print('{:d} validation roidb entries'.format(len(valroidb)))
   cfg.TRAIN.USE_FLIPPED = orgflip
 
+  # load network
   if args.net == 'vgg16':
     net = vgg16(batch_size=cfg.TRAIN.IMS_PER_BATCH)
+  elif args.net == 'res50':
+    net = resnetv1(batch_size=cfg.TRAIN.IMS_PER_BATCH, num_layers=50)
   elif args.net == 'res101':
-    net = Resnet101(batch_size=cfg.TRAIN.IMS_PER_BATCH)
+    net = resnetv1(batch_size=cfg.TRAIN.IMS_PER_BATCH, num_layers=101)
+  elif args.net == 'res152':
+    net = resnetv1(batch_size=cfg.TRAIN.IMS_PER_BATCH, num_layers=152)
   else:
     raise NotImplementedError
     
