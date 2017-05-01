@@ -73,14 +73,14 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 ### Demo and Test with pre-trained models
 1. Download pre-trained model
   ```Shell
-  # Resnet101 for voc pretrained on 07+12 set
+  # Resnet101 for voc pre-trained on 07+12 set
   ./data/scripts/fetch_faster_rcnn_models.sh
   ```
   **Note**: if you cannot download the models through the link, or you want to try more models, you can check out the following solutions and optionally update the downloading script:
   - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
   - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
 
-2. Create a folder and a softlink to use the pretrained model
+2. Create a folder and a softlink to use the pre-trained model
   ```Shell
   NET=res101
   TRAIN_IMDB=voc_2007_trainval+voc_2012_trainval
@@ -101,8 +101,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 4. Test with pre-trained VGG16 models
   ```Shell
   GPU_ID=0
-  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
-  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
+  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc_0712
   ```
   **Note**: If you cannot get the reported numbers, then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
 
@@ -136,6 +135,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/train_faster_rcnn.sh 0 pascal_voc vgg16
   ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
   ```
+  **Note**: double check you have deleted softlink to the pre-trained models before training!
 
 3. Visualization with Tensorboard
   ```Shell
