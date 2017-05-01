@@ -96,14 +96,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   GPU_ID=0
   CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
   ```
-  **Note**: Resnet101 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).  
-
-  Demo with Resnet101 if you have downloaded those and placed them in the proper locations:
-   ```Shell
-  # at reposistory root
-  GPU_ID=1
-  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
-  ```
+  **Note**: Resnet101 testing probably requires several gigabytes of memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25). 
 
 4. Test with pre-trained VGG16 models
   ```Shell
