@@ -34,10 +34,10 @@ def parse_args():
                       type=str)
   parser.add_argument('--imdb', dest='imdb_name',
                       help='dataset to train on',
-                      default='kitti_train', type=str)
+                      default='voc_2007_trainval', type=str)
   parser.add_argument('--imdbval', dest='imdbval_name',
                       help='dataset to validate on',
-                      default='kitti_valid', type=str)
+                      default='voc_2007_test', type=str)
   parser.add_argument('--iters', dest='max_iters',
                       help='number of iterations to train',
                       default=70000, type=int)

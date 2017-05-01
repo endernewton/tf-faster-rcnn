@@ -4,7 +4,7 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 **Note**: Several minor modifications are made when reimplementing the framework, which give potential improvements. For details about the modifications and ablative analysis, please refer to the technical report [An Implementation of Faster RCNN with Study for Region Sampling](https://arxiv.org/pdf/1702.02138.pdf). If you are seeking to reproduce the results in the original paper, please use the [official code](https://github.com/ShaoqingRen/faster_rcnn) or maybe the [semi-official code](https://github.com/rbgirshick/py-faster-rcnn). For details about the faster RCNN architecture please refer to the paper [Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks](http://arxiv.org/pdf/1506.01497.pdf). 
 
 ### Detection Performance
-We only tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. All models are released.
+The current code support **VGG16** and **Resnet V1** models. We tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture so far. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. All models are released.
 
 With VGG16 (``conv5_3``):
   - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
@@ -57,8 +57,64 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   make
   cd ..
   ```
-  
-4. Download pre-trained models and weights. The current code support VGG16 and Resnet V1 models. Pre-trained models are provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for VGG16 model, you can set up like:
+
+4. Install the [Python COCO API](https://github.com/pdollar/coco). The code requires the API to access COCO dataset.
+  ```Shell
+  cd data
+  git clone https://github.com/pdollar/coco.git
+  cd ..
+  ```
+
+### Setup data
+Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets (Part of COCO is done). The steps involve downloading data and optionally creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
+
+If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
+
+### Demo and Test with pre-trained models
+1. Download pre-trained model
+  ```Shell
+  # Resnet101 for voc pretrained on 07+12 set
+  ./data/scripts/fetch_faster_rcnn_models.sh
+  ```
+  **Note**: if you cannot download the models through the link, or you want to try more models, you can check out the following solutions and optionally update the downloading script:
+  - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
+  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
+
+2. Create a folder and a softlink to use the pretrained model
+  ```Shell
+  NET=res101
+  TRAIN_IMDB=voc_2007_trainval+voc_2012_trainval
+  mkdir -p output/${NET}/${TRAIN_IMDB}
+  cd output/${NET}/${TRAIN_IMDB}
+  ln -s ../../../data/voc_2007_trainval+voc_2012_trainval ./default
+  cd ../../..
+  ```
+
+3. Demo for testing on custom images
+  ```Shell
+  # at reposistory root
+  GPU_ID=0
+  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
+  ```
+  **Note**: Resnet101 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).  
+
+  Demo with Resnet101 if you have downloaded those and placed them in the proper locations:
+   ```Shell
+  # at reposistory root
+  GPU_ID=1
+  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
+  ```
+
+4. Test with pre-trained VGG16 models
+  ```Shell
+  GPU_ID=0
+  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
+  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
+  ```
+  **Note**: If you cannot get the reported numbers, then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
+
+### Train your own model
+1. Download pre-trained models and weights. The current code support VGG16 and Resnet V1 models. Pre-trained models are provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for VGG16 model, you can set up like:
    ```Shell
    mkdir -p data/imagenet_weights
    cd data/imagenet_weights
@@ -77,67 +133,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
    cd ../..
    ```
 
-5. Install the [Python COCO API](https://github.com/pdollar/coco). The code requires the API to access COCO dataset.
-   ```Shell
-   cd data
-   git clone https://github.com/pdollar/coco.git
-   cd ..
-   ```
-
-### Setup data
-Please follow the instructions of py-faster-rcnn [here](https://github.com/rbgirshick/py-faster-rcnn#beyond-the-demo-installation-for-training-and-testing-models) to setup VOC and COCO datasets (Part of COCO is done). The steps involve downloading data and optionally creating softlinks in the ``data`` folder. Since faster RCNN does not rely on pre-computed proposals, it is safe to ignore the steps that setup proposals.
-
-If you find it useful, the ``data/cache`` folder created on my side is also shared [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/cache.tgz). 
-
-### Demo and Test with (old) pre-trained models
-1. Download pre-trained models and weights (VGG16)
-  ```Shell
-  # return to the repository root
-  cd ..
-  # VGG16 for both voc and coco using default training scheme
-  ./data/scripts/fetch_faster_rcnn_models.sh
-  # VGG16 weights for imagenet pretrained model, extracted from released caffe model
-  ./data/scripts/fetch_imagenet_weights.sh
-  ```
-  **Note**: if you cannot download the models through the link. You can check out the following solutions:
-  - Another server [here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
-  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
-
-2. Create a folder and a softlink to use the pretrained model
-  ```Shell
-  NET=vgg16_depre
-  mkdir -p output/${NET}
-  cd output/${NET}
-  ln -s ../../data/faster_rcnn_models/voc_2007_trainval ./
-  ln -s ../../data/faster_rcnn_models/coco_2014_train+coco_2014_valminusminival ./
-  cd ../..
-  ```
-
-3. Demo for testing on custom images (VGG16, VOC)
-  ```Shell
-  # at reposistory root
-  GPU_ID=0
-  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo_depre.py 
-  ```
-  **Note**: VGG16 testing probably requires 4G memory, so if you are using GPUs with a smaller memory capacity, please install it with CPU support only. Refer to [Issue 25](https://github.com/endernewton/tf-faster-rcnn/issues/25).  
-
-  Demo with Resnet101 if you have downloaded those and placed them in the proper locations:
-   ```Shell
-  # at reposistory root
-  GPU_ID=1
-  CUDA_VISIBLE_DEVICES=${GPU_ID} ./tools/demo.py 
-  ```
-
-4. Test with pre-trained VGG16 models
-  ```Shell
-  GPU_ID=0
-  ./experiments/scripts/test_vgg16.sh $GPU_ID pascal_voc
-  ./experiments/scripts/test_vgg16.sh $GPU_ID coco
-  ```
-  **Note**: If you cannot get the reported numbers, then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
-
-### Train your own model
-1. Train (and test, evaluation)
+2. Train (and test, evaluation)
   ```Shell
   ./experiments/scripts/train_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
@@ -148,13 +144,13 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
   ```
 
-2. Visualization with Tensorboard
+3. Visualization with Tensorboard
   ```Shell
   tensorboard --logdir=tensorboard/vgg16/voc_2007_trainval/ --port=7001 &
   tensorboard --logdir=tensorboard/vgg16/coco_2014_train+coco_2014_valminusminival/ --port=7002 &
   ```
   
-3. Test and evaluate
+4. Test and evaluate
   ```Shell
   ./experiments/scripts/test_faster_rcnn.sh [GPU_ID] [DATASET] [NET]
   # GPU_ID is the GPU you want to test on
@@ -165,7 +161,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/test_faster_rcnn.sh 1 coco res101
   ```
   
-4. You can use ``tools/reval.sh`` for re-evaluation
+5. You can use ``tools/reval.sh`` for re-evaluation
 
 
 By default, trained networks are saved under:

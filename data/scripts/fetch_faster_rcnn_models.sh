@@ -3,10 +3,11 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $DIR
 
-FILE=faster_rcnn_models.tgz
+NET=res101
+FILE=voc_0712_80k-110k.tgz
 # replace it with gs11655.sp.cs.cmu.edu if ladoga.graphics.cs.cmu.edu does not work
-URL=http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/$FILE
-CHECKSUM=865cdf7350a87ef41d6476e6e33b7212
+URL=http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/$NET/$FILE
+CHECKSUM=cb32e9df553153d311cc5095b2f8c340
 
 if [ -f $FILE ]; then
   echo "File already exists. Checking md5..."
@@ -24,7 +25,7 @@ if [ -f $FILE ]; then
   fi
 fi
 
-echo "Downloading Faster R-CNN models (2G)..."
+echo "Downloading Resnet 101 Faster R-CNN models Pret-trained on VOC 07+12 (340M)..."
 
 wget $URL -O $FILE
 

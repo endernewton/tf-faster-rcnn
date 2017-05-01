@@ -103,9 +103,9 @@ def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='Tensorflow Faster R-CNN demo')
     parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16 res101]',
-                        choices=NETS.keys(), default='vgg16')
+                        choices=NETS.keys(), default='res101')
     parser.add_argument('--dataset', dest='dataset', help='Trained dataset [pascal_voc pascal_voc_0712]',
-                        choices=DATASETS.keys(), default='pascal_voc')
+                        choices=DATASETS.keys(), default='pascal_voc_0712')
     args = parser.parse_args()
 
     return args
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # model path
     demonet = args.demo_net
     dataset = args.dataset
-    tfmodel = os.path.join('../output',demonet,DATASETS[dataset][0], 'default',
+    tfmodel = os.path.join('output', demonet, DATASETS[dataset][0], 'default',
                               NETS[demonet][0])
 
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     if demonet == 'vgg16':
         net = vgg16(batch_size=1)
     elif demonet == 'res101':
-        net = Resnet101(batch_size=1)
+        net = resnetv1(batch_size=1, num_layers=101)
     else:
         raise NotImplementedError
     net.create_architecture(sess, "TEST", 21,
