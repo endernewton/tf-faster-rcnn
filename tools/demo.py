@@ -17,7 +17,7 @@ from __future__ import print_function
 
 import _init_paths
 from model.config import cfg
-from model.test_vgg16 import im_detect
+from model.test import im_detect
 from model.nms_wrapper import nms
 
 from utils.timer import Timer
