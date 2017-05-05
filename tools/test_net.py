@@ -1,3 +1,12 @@
+# --------------------------------------------------------
+# Tensorflow Faster R-CNN
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Zheqi he, Xinlei Chen, based on code from Ross Girshick
+# --------------------------------------------------------
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import _init_paths
 from model.test import test_net
 from model.config import cfg, cfg_from_file, cfg_from_list
@@ -8,6 +17,7 @@ import time, os, sys
 
 import tensorflow as tf
 from nets.vgg16 import vgg16
+from nets.resnet_v1 import resnetv1
 
 def parse_args():
   """
@@ -18,9 +28,6 @@ def parse_args():
             help='optional config file', default=None, type=str)
   parser.add_argument('--model', dest='model',
             help='model to test',
-            default=None, type=str)
-  parser.add_argument('--weight', dest='weight',
-            help='weight to test',
             default=None, type=str)
   parser.add_argument('--imdb', dest='imdb_name',
             help='dataset to test',
@@ -33,6 +40,9 @@ def parse_args():
   parser.add_argument('--tag', dest='tag',
                         help='tag of the model',
                         default='', type=str)
+  parser.add_argument('--net', dest='net',
+                      help='vgg16, res50, res101, res152',
+                      default='res50', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
@@ -78,25 +88,31 @@ if __name__ == '__main__':
   # init session
   sess = tf.Session(config=tfconfig)
   # load network
-  net = vgg16(batch_size=1)
-  # load model
-  if imdb.name.startswith('voc'):
-    anchors = [8, 16, 32]
+  if args.net == 'vgg16':
+    net = vgg16(batch_size=1)
+  elif args.net == 'res50':
+    net = resnetv1(batch_size=1, num_layers=50)
+  elif args.net == 'res101':
+    net = resnetv1(batch_size=1, num_layers=101)
+  elif args.net == 'res152':
+    net = resnetv1(batch_size=1, num_layers=152)
   else:
-    anchors = [4, 8, 16, 32]
+    raise NotImplementedError
 
-  net.create_architecture(sess, "TEST", imdb.num_classes, caffe_weight_path=args.weight, 
-                          tag='default', anchor_scales=anchors)
+  # load model
+  net.create_architecture(sess, "TEST", imdb.num_classes, tag='default',
+                          anchor_scales=cfg.ANCHOR_SCALES,
+                          anchor_ratios=cfg.ANCHOR_RATIOS)
 
   if args.model:
-    print ('Loading model check point from {:s}').format(args.model)
+    print(('Loading model check point from {:s}').format(args.model))
     saver = tf.train.Saver()
     saver.restore(sess, args.model)
-    print 'Loaded.'
+    print('Loaded.')
   else:
-    print ('Loading initial weights from {:s}').format(args.weight)
+    print(('Loading initial weights from {:s}').format(args.weight))
     sess.run(tf.global_variables_initializer())
-    print 'Loaded.'
+    print('Loaded.')
 
   test_net(sess, net, imdb, filename, max_per_image=args.max_per_image)
 

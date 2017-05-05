@@ -1,4 +1,4 @@
-EXP_DIR: vgg16
+EXP_DIR: vgg16_depre
 TRAIN:
   HAS_RPN: True
   IMS_PER_BATCH: 1
