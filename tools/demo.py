@@ -123,8 +123,7 @@ if __name__ == '__main__':
 
     if not os.path.isfile(tfmodel + '.meta'):
         raise IOError(('{:s} not found.\nDid you download the proper networks from '
-                       'our server and place them properly? If you want something '
-                       'simple and handy, try ./tools/demo_depre.py first.').format(tfmodel + '.meta'))
+                       'our server and place them properly?').format(tfmodel + '.meta'))
 
     # set config
     tfconfig = tf.ConfigProto(allow_soft_placement=True)
