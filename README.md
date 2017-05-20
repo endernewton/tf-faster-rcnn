@@ -103,7 +103,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
 4. Test with pre-trained Resnet101 models
   ```Shell
   GPU_ID=0
-  ./experiments/scripts/test_faster_rcnn.sh $GPU_ID pascal_voc_0712
+  ./experiments/scripts/test_faster_rcnn.sh $GPU_ID pascal_voc_0712 res101
   ```
   **Note**: If you cannot get the reported numbers (for this one the default mAP is 78.7 on my side), then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
 
