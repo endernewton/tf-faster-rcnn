@@ -17,6 +17,7 @@ With Resnet101 (last ``conv4``):
   - Train on COCO 2014 trainval35k and test on minival (900k/1190k), **34.1**. 
   
 More Resnets:
+  - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **31.6**. 
   - (Deprecated) Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
   
 **Note**:
@@ -25,7 +26,7 @@ More Resnets:
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and excluding ground truth boxes in RoIs during training.
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. 
-  - For Resnet101, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool. The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled.
+  - For Resnet101, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool (which I find useless especially for COCO). The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled.
   - For approximate [FPN](https://arxiv.org/abs/1612.03144) baseline setup we simply resize the image with 800 pixels, add 32^2 anchors, and take 1000 proposals during testing.
   - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet101 ones.
 
@@ -105,7 +106,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   GPU_ID=0
   ./experiments/scripts/test_faster_rcnn.sh $GPU_ID pascal_voc_0712 res101
   ```
-  **Note**: If you cannot get the reported numbers (for this one the default mAP is 78.7 on my side), then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
+  **Note**: If you cannot get the reported numbers (78.7 on my side), then probabaly the NMS function is compiled improperly, refer to [Issue 5](https://github.com/endernewton/tf-faster-rcnn/issues/5). 
 
 ### Train your own model
 1. Download pre-trained models and weights. The current code support VGG16 and Resnet V1 models. Pre-trained models are provided by slim, you can get the pre-trained models [here](https://github.com/tensorflow/models/tree/master/slim#pre-trained-models) and set them in the ``data/imagenet_weights`` folder. For example for VGG16 model, you can set up like:
