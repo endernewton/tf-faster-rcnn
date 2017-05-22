@@ -55,9 +55,10 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
 2. Update your -arch in setup script to match your GPU
   ```Shell
   cd tf-faster-rcnn/lib
+  # Check the GPU architecture
   vim setup.py
-  # Check the GPU architecture, if you are using Pascal/Maxwell arch, sm_52 should work
   ```
+  **Note**: I only have access to TitanX (both Maxwell and Pascal) and sm_52 seems to work fine on those machines. You are welcome to contribute the settings on your end if you have made the code work properly on other GPUs.
 
 3. Build the Cython modules
   ```Shell
