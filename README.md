@@ -19,7 +19,9 @@ With Resnet101 (last ``conv4``):
 More Resnets:
   - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **31.6**. 
   - Train Resnet152 on COCO 2014 trainval35k and test on minival (900k/1190k), **35.2**. 
-  - (Deprecated) Train on COCO 2014 trainval35k and test on minival with approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) (900k/1290k), **35.8**. 
+  
+Approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml)
+  - Train Resnet50 on COCO 2014 trainval35k and test on minival with (900k/1190k), **33.4**. 
   
 **Note**:
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within ~0.2%) despite the randomness.
@@ -27,7 +29,7 @@ More Resnets:
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and excluding ground truth boxes in RoIs during training.
   - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations. 
-  - For Resnet101, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool (which I find useless especially for COCO). The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled.
+  - For Resnets, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool (which I find useless especially for COCO). The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled.
   - For approximate [FPN](https://arxiv.org/abs/1612.03144) baseline setup we simply resize the image with 800 pixels, add 32^2 anchors, and take 1000 proposals during testing.
   - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://gs11655.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet101 ones.
 
@@ -52,7 +54,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   cd tf-faster-rcnn/lib
   vim setup.py
-  # Check the GPU architecture, if you are using Pascal arch, please switch to sm_61
+  # Check the GPU architecture, if you are using Pascal/Maxwell arch, sm_52 should work
   ```
 
 3. Build the Cython modules
@@ -139,7 +141,7 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./experiments/scripts/train_faster_rcnn.sh 0 pascal_voc vgg16
   ./experiments/scripts/train_faster_rcnn.sh 1 coco res101
   ```
-  **Note**: double check you have deleted softlink to the pre-trained models before training!
+  **Note**: Please double check you have deleted softlink to the pre-trained models before training. If you find NaNs during training, please refer to [Issue 86](https://github.com/endernewton/tf-faster-rcnn/issues/86).
 
 3. Visualization with Tensorboard
   ```Shell
