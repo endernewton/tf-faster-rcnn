@@ -20,8 +20,10 @@ More Resnets:
   - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **31.6**. 
   - Train Resnet152 on COCO 2014 trainval35k and test on minival (900k/1190k), **35.2**. 
   
-Approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml)
+Approximate [FPN](https://arxiv.org/abs/1612.03144) *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml):
   - Train Resnet50 on COCO 2014 trainval35k and test on minival with (900k/1190k), **33.4**. 
+  - Train Resnet101 on COCO 2014 trainval35k and test on minival with (1000k/1390k), **36.0**. 
+  - Train Resnet152 on COCO 2014 trainval35k and test on minival with (1000k/1390k), **37.2**. 
   
 **Note**:
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within ~0.2%) despite the randomness.
