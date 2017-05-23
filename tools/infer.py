@@ -31,7 +31,7 @@ import os, cv2
 import argparse
 
 from nets.vgg16 import vgg16
-from nets.res101 import Resnet101
+from nets.resnet_v1 import resnetv1
 
 CLASSES = ('__background__',
            'new_classes')
