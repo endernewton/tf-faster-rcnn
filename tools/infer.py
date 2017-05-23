@@ -234,7 +234,7 @@ if __name__ == '__main__':
     if demonet == 'vgg16':
         net = vgg16(batch_size=1)
     elif demonet == 'res101':
-        net = Resnet101(batch_size=1)
+        net = resnetv1(batch_size=1, num_layers=101)
     else:
         raise NotImplementedError
     net.create_architecture(sess, "TEST", NUM_CLASSES,
