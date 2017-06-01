@@ -79,6 +79,8 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   ```Shell
   cd data
   git clone https://github.com/pdollar/coco.git
+  cd coco/PythonAPI
+  make
   cd ..
   ```
 
