@@ -31,7 +31,7 @@ import os, cv2
 import argparse
 
 from nets.vgg16 import vgg16
-from nets.res101 import Resnet101
+from nets.resnet_v1 import resnetv1
 
 CLASSES = ('__background__',
            'new_classes')
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     if demonet == 'vgg16':
         net = vgg16(batch_size=1)
     elif demonet == 'res101':
-        net = Resnet101(batch_size=1)
+        net = resnetv1(batch_size=1, num_layers=101)
     else:
         raise NotImplementedError
     net.create_architecture(sess, "TEST", NUM_CLASSES,
