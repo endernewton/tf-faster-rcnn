@@ -17,11 +17,6 @@ from tensorflow.contrib.slim.python.slim.nets.resnet_v1 import resnet_v1_block
 import numpy as np
 
 from nets.network import Network
-from tensorflow.python.framework import ops
-from tensorflow.contrib.layers.python.layers import regularizers
-from tensorflow.python.ops import nn_ops
-from tensorflow.contrib.layers.python.layers import initializers
-from tensorflow.contrib.layers.python.layers import layers
 from model.config import cfg
 
 def resnet_arg_scope(is_training=True,
@@ -30,25 +25,22 @@ def resnet_arg_scope(is_training=True,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
   batch_norm_params = {
-    # NOTE 'is_training' here does not work because inside resnet it gets reset:
-    # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L187
-    'is_training': False,
     'decay': batch_norm_decay,
     'epsilon': batch_norm_epsilon,
     'scale': batch_norm_scale,
     'trainable': cfg.RESNET.BN_TRAIN,
-    'updates_collections': ops.GraphKeys.UPDATE_OPS
+    'updates_collections': tf.GraphKeys.UPDATE_OPS
   }
 
   with arg_scope(
       [slim.conv2d],
-      weights_regularizer=regularizers.l2_regularizer(weight_decay),
-      weights_initializer=initializers.variance_scaling_initializer(),
+      weights_regularizer=slim.l2_regularizer(weight_decay),
+      weights_initializer=slim.variance_scaling_initializer(),
       trainable=is_training,
-      activation_fn=nn_ops.relu,
-      normalizer_fn=layers.batch_norm,
+      activation_fn=tf.nn.relu,
+      normalizer_fn=slim.batch_norm,
       normalizer_params=batch_norm_params):
-    with arg_scope([layers.batch_norm], **batch_norm_params) as arg_sc:
+    with arg_scope([slim.batch_norm], **batch_norm_params) as arg_sc:
       return arg_sc
 
 class resnetv1(Network):
