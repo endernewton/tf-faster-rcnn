@@ -103,21 +103,21 @@ class resnetv1(Network):
     if self._num_layers == 50:
       blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
-                     # use stride 1 for the last conv4 layer
+                # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=6, stride=1),
                 resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 101:
       blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
-                     # use stride 1 for the last conv4 layer
+                # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=23, stride=1),
                 resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 152:
       blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=8, stride=2),
-                     # use stride 1 for the last conv4 layer
+                # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=36, stride=1),
                 resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
