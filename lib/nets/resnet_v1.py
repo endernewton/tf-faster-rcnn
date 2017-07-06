@@ -25,6 +25,9 @@ def resnet_arg_scope(is_training=True,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
   batch_norm_params = {
+    # NOTE 'is_training' here does not work because inside resnet it gets reset:
+    # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L190
+    'is_training': False,
     'decay': batch_norm_decay,
     'epsilon': batch_norm_epsilon,
     'scale': batch_norm_scale,
