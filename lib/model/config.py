@@ -151,6 +151,9 @@ __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
 # For COCO, setting USE_ALL_GT to False will exclude boxes that are flagged as ''iscrowd''
 __C.TRAIN.USE_ALL_GT = True
 
+# Whether to tune the batch normalization parameters during training
+__C.TRAIN.BN_TRAIN = False
+
 #
 # Testing options
 #
@@ -205,17 +208,27 @@ __C.TEST.RPN_TOP_N = 5000
 __C.RESNET = edict()
 
 # Option to set if max-pooling is appended after crop_and_resize. 
-# if true, the region will be resized to a squre of 2xPOOLING_SIZE, 
+# if true, the region will be resized to a square of 2xPOOLING_SIZE, 
 # then 2x2 max-pooling is applied; otherwise the region will be directly
 # resized to a square of POOLING_SIZE
 __C.RESNET.MAX_POOL = False
 
-# Number of fixed blocks during finetuning, by default the first of all 4 blocks is fixed
+# Number of fixed blocks during training, by default the first of all 4 blocks is fixed
 # Range: 0 (none) to 3 (all)
 __C.RESNET.FIXED_BLOCKS = 1
 
-# Whether to tune the batch nomalization parameters during training
-__C.RESNET.BN_TRAIN = False
+#
+# MobileNet options
+#
+
+__C.MOBILENET = edict()
+
+# Whether to regularize the depth-wise filters during training
+__C.MOBILENET.REGU_DEPTH = False
+
+# Number of fixed layers during training, by default the first of all 14 layers is fixed
+# Range: 0 (none) to 12 (all)
+__C.MOBILENET.FIXED_LAYERS = 1
 
 #
 # MISC

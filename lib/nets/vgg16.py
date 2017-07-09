@@ -125,7 +125,7 @@ class vgg16(Network):
         self._variables_to_fix[v.name] = v
         continue
       if v.name.split(':')[0] in var_keep_dic:
-        print('Varibles restored: %s' % v.name)
+        print('Variables restored: %s' % v.name)
         variables_to_restore.append(v)
 
     return variables_to_restore
