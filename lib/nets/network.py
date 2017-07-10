@@ -36,6 +36,7 @@ class Network(object):
     self._score_summaries = {}
     self._train_summaries = []
     self._event_summaries = {}
+    self._variables_to_fix = {}
 
   def _add_image_summary(self, image, boxes):
     # add back mean
@@ -269,6 +270,7 @@ class Network(object):
 
   def create_architecture(self, sess, mode, num_classes, tag=None,
                           anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
+
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
     self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
     self._gt_boxes = tf.placeholder(tf.float32, shape=[None, 5])
@@ -336,6 +338,12 @@ class Network(object):
       self._summary_op_val = tf.summary.merge(val_summaries)
 
     return layers_to_output
+
+  def get_variables_to_restore(self, variables, var_keep_dic):
+    raise NotImplementedError
+
+  def fix_variables(self, sess, pretrained_model):
+    raise NotImplementedError
 
   # Extract the head feature maps, for example for vgg16 it is conv5_3
   # only useful during testing mode

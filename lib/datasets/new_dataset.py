@@ -24,7 +24,7 @@ class new_dataset(imdb):
                             else data_path
         self._data_path = self._devkit_path
         self._classes = ('__background__', # always index 0
-                         'new_classes')
+                         'cluster')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()

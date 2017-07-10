@@ -54,7 +54,6 @@ class resnetv1(Network):
   def __init__(self, batch_size=1, num_layers=50):
     Network.__init__(self, batch_size=batch_size)
     self._num_layers = num_layers
-    self._arch = 'res_v1_%d' % num_layers
     self._resnet_scope = 'resnet_v1_%d' % num_layers
 
   def _crop_pool_layer(self, bottom, rois, name):
@@ -238,3 +237,29 @@ class resnetv1(Network):
     self._score_summaries.update(self._predictions)
 
     return rois, cls_prob, bbox_pred
+
+  def get_variables_to_restore(self, variables, var_keep_dic):
+    variables_to_restore = []
+
+    for v in variables:
+      # exclude the first conv layer to swap RGB to BGR
+      if v.name == (self._resnet_scope + '/conv1/weights:0'):
+        self._variables_to_fix[v.name] = v
+        continue
+      if v.name.split(':')[0] in var_keep_dic:
+        print('Varibles restored: %s' % v.name)
+        variables_to_restore.append(v)
+
+    return variables_to_restore
+
+  def fix_variables(self, sess, pretrained_model):
+    print('Fix Resnet V1 layers..')
+    with tf.variable_scope('Fix_Resnet_V1') as scope:
+      with tf.device("/cpu:0"):
+        # fix RGB to BGR
+        conv1_rgb = tf.get_variable("conv1_rgb", [7, 7, 3, 64], trainable=False)
+        restorer_fc = tf.train.Saver({self._resnet_scope + "/conv1/weights": conv1_rgb})
+        restorer_fc.restore(sess, pretrained_model)
+
+        sess.run(tf.assign(self._variables_to_fix[self._resnet_scope + '/conv1/weights:0'], 
+                           tf.reverse(conv1_rgb, [2])))

@@ -12,7 +12,8 @@ from __future__ import print_function
 
 __sets = {}
 from datasets.pascal_voc import pascal_voc
-#from datasets.coco import coco
+from datasets.coco import coco
+from datasets.grapes import grapes
 
 import numpy as np
 
@@ -23,17 +24,22 @@ for year in ['2007', '2012']:
     __sets[name] = (lambda split=split, year=year: pascal_voc(split, year))
 
 # Set up coco_2014_<split>
-#for year in ['2014']:
-#  for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:
-#    name = 'coco_{}_{}'.format(year, split)
-#    __sets[name] = (lambda split=split, year=year: coco(split, year))
+for year in ['2014']:
+  for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:
+    name = 'coco_{}_{}'.format(year, split)
+    __sets[name] = (lambda split=split, year=year: coco(split, year))
 
 # Set up coco_2015_<split>
-#for year in ['2015']:
-#  for split in ['test', 'test-dev']:
-#    name = 'coco_{}_{}'.format(year, split)
-#    __sets[name] = (lambda split=split, year=year: coco(split, year))
+for year in ['2015']:
+  for split in ['test', 'test-dev']:
+    name = 'coco_{}_{}'.format(year, split)
+    __sets[name] = (lambda split=split, year=year: coco(split, year))
 
+
+# Set up grapes_<split>
+for split in ['train', 'val', 'trainval', 'test']:
+    name = 'grapes_{}'.format(split)
+    __sets[name] = (lambda split=split: grapes(split))
 
 def get_imdb(name):
   """Get an imdb (image database) by name."""
