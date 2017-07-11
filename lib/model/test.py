@@ -139,7 +139,7 @@ def apply_nms(all_boxes, thresh):
       nms_boxes[cls_ind][im_ind] = dets[keep, :].copy()
   return nms_boxes
 
-def test_net(sess, net, imdb, weights_filename, max_per_image=100, thresh=0.05):
+def test_net(sess, net, imdb, weights_filename, output_model, max_per_image=100, thresh=0.05):
   np.random.seed(cfg.RNG_SEED)
   """Test a Fast R-CNN network on an image database."""
   num_images = len(imdb.image_index)
@@ -149,7 +149,10 @@ def test_net(sess, net, imdb, weights_filename, max_per_image=100, thresh=0.05):
   all_boxes = [[[] for _ in range(num_images)]
          for _ in range(imdb.num_classes)]
 
-  output_dir = get_output_dir(imdb, weights_filename)
+  if output_model is None:
+    output_dir = get_output_dir(imdb, weights_filename)
+  else:
+    output_dir = os.path.join(output_model, 'results')
   # timers
   _t = {'im_detect' : Timer(), 'misc' : Timer()}
 
@@ -187,6 +190,9 @@ def test_net(sess, net, imdb, weights_filename, max_per_image=100, thresh=0.05):
     print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
         .format(i + 1, num_images, _t['im_detect'].average_time,
             _t['misc'].average_time))
+
+  if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
   det_file = os.path.join(output_dir, 'detections.pkl')
   with open(det_file, 'wb') as f:
