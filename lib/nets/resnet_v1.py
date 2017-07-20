@@ -25,9 +25,7 @@ def resnet_arg_scope(is_training=True,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
   batch_norm_params = {
-    # NOTE 'is_training' here does not work because inside resnet it gets reset:
-    # https://github.com/tensorflow/models/blob/master/slim/nets/resnet_v1.py#L190
-    'is_training': False,
+    'is_training': cfg.TRAIN.BN_TRAIN and is_training,
     'decay': batch_norm_decay,
     'epsilon': batch_norm_epsilon,
     'scale': batch_norm_scale,
@@ -63,7 +61,7 @@ class resnetv1(Network):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      # Won't be backpropagated to rois anyway, but to save time
+      # Won't be back-propagated to rois anyway, but to save time
       bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
       if cfg.RESNET.MAX_POOL:
         pre_pool_size = cfg.POOLING_SIZE * 2
@@ -121,13 +119,14 @@ class resnetv1(Network):
       raise NotImplementedError
 
     assert (0 <= cfg.RESNET.FIXED_BLOCKS <= 3)
-    net_conv = self.build_base()
+    # Now the base is always fixed during training
+    with slim.arg_scope(resnet_arg_scope(is_training=False)):
+      net_conv = self.build_base()
     if cfg.RESNET.FIXED_BLOCKS > 0:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net_conv, _ = resnet_v1.resnet_v1(net_conv,
                                      blocks[0:cfg.RESNET.FIXED_BLOCKS],
                                      global_pool=False,
-                                     is_training=False,
                                      include_root_block=False,
                                      scope=self._resnet_scope)
     if cfg.RESNET.FIXED_BLOCKS < 3:
@@ -135,7 +134,6 @@ class resnetv1(Network):
         net_conv, _ = resnet_v1.resnet_v1(net_conv,
                                            blocks[cfg.RESNET.FIXED_BLOCKS:-1],
                                            global_pool=False,
-                                           is_training=is_training,
                                            include_root_block=False,
                                            scope=self._resnet_scope)
 
@@ -155,6 +153,7 @@ class resnetv1(Network):
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
+      rpn_cls_pred = tf.argmax(tf.reshape(rpn_cls_score_reshape, [-1, 2]), axis=1, name="rpn_cls_pred")
       rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
       rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
@@ -191,6 +190,7 @@ class resnetv1(Network):
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,
                                        trainable=is_training, activation_fn=None, scope='cls_score')
+      cls_pred = tf.argmax(cls_score, axis=1, name="cls_pred")
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
                                        trainable=is_training,
@@ -198,8 +198,10 @@ class resnetv1(Network):
     self._predictions["rpn_cls_score"] = rpn_cls_score
     self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
     self._predictions["rpn_cls_prob"] = rpn_cls_prob
+    self._predictions["rpn_cls_pred"] = rpn_cls_pred
     self._predictions["rpn_bbox_pred"] = rpn_bbox_pred
     self._predictions["cls_score"] = cls_score
+    self._predictions["cls_pred"] = cls_pred
     self._predictions["cls_prob"] = cls_prob
     self._predictions["bbox_pred"] = bbox_pred
     self._predictions["rois"] = rois

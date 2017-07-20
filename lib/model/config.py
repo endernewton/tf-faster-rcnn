@@ -230,6 +230,9 @@ __C.MOBILENET.REGU_DEPTH = False
 # Range: 0 (none) to 12 (all)
 __C.MOBILENET.FIXED_LAYERS = 1
 
+# Weight decay for the mobilenet weights
+__C.MOBILENET.WEIGHT_DECAY = 0.00004
+
 #
 # MISC
 #

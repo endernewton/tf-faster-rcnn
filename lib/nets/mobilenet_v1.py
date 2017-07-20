@@ -30,6 +30,9 @@ def separable_conv2d_same(inputs, kernel_size, stride, rate=1, scope=None):
     output: A 4-D tensor of size [batch, height_out, width_out, channels] with
       the convolution output.
   """
+
+  # By passing filters=None
+  # separable_conv2d produces only a depth-wise convolution layer
   if stride == 1:
     return slim.separable_conv2d(inputs, None, kernel_size, 
                                   depth_multiplier=1, stride=1, rate=rate,
@@ -48,7 +51,7 @@ def separable_conv2d_same(inputs, kernel_size, stride, rate=1, scope=None):
 # The following is adapted from:
 # https://github.com/tensorflow/models/blob/master/slim/nets/mobilenet_v1.py
 
-# Conv and DepthSepConv namedtuple define layers of the MobileNet architecture
+# Conv and DepthSepConv named tuple define layers of the MobileNet architecture
 # Conv defines 3x3 convolution layers
 # DepthSepConv defines 3x3 depthwise convolution followed by 1x1 convolution.
 # stride is the stride of the convolution
@@ -96,7 +99,7 @@ def mobilenet_v1_base(inputs,
       for all convolution ops. The value must be greater than zero. Typical
       usage will be to set this value in (0, 1) to reduce the number of
       parameters or computation cost of the model.
-    conv_defs: A list of ConvDef namedtuples specifying the net architecture.
+    conv_defs: A list of ConvDef named tuples specifying the net architecture.
     output_stride: An integer that specifies the requested ratio of input to
       output spatial resolution. If not None, then we invoke atrous convolution
       if necessary to prevent the network from reducing the spatial resolution
@@ -150,8 +153,6 @@ def mobilenet_v1_base(inputs,
       elif isinstance(conv_def, DepthSepConv):
         end_point = end_point_base + '_depthwise'
 
-        # By passing filters=None
-        # separable_conv2d_same produces only a depthwise convolution layer
         net = separable_conv2d_same(net, conv_def.kernel,
                                     stride=layer_stride,
                                     rate=layer_rate,
@@ -171,11 +172,11 @@ def mobilenet_v1_base(inputs,
 
 # Modified arg_scope to incorporate configs
 def mobilenet_v1_arg_scope(is_training=True,
-                           weight_decay=cfg.TRAIN.WEIGHT_DECAY,
+                           weight_decay=cfg.MOBILENET.WEIGHT_DECAY,
                            stddev=0.09,
                            regularize_depthwise=cfg.MOBILENET.REGU_DEPTH):
   batch_norm_params = {
-      'is_training': is_training,
+      'is_training': cfg.TRAIN.BN_TRAIN and is_training,
       'center': True,
       'scale': True,
       'decay': 0.9997,
@@ -212,7 +213,7 @@ class mobilenetv1(Network):
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
       batch_ids = tf.squeeze(tf.slice(rois, [0, 0], [-1, 1], name="batch_id"), [1])
-      # Get the normalized coordinates of bboxes
+      # Get the normalized coordinates of bounding boxes
       bottom_shape = tf.shape(bottom)
       height = (tf.to_float(bottom_shape[1]) - 1.) * np.float32(self._feat_stride[0])
       width = (tf.to_float(bottom_shape[2]) - 1.) * np.float32(self._feat_stride[0])
@@ -220,10 +221,11 @@ class mobilenetv1(Network):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      # Won't be backpropagated to rois anyway, but to save time
+      # Won't be back-propagated to rois anyway, but to save time
       bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
-      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [cfg.POOLING_SIZE, cfg.POOLING_SIZE],
-                                         name="crops")
+      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), 
+                                        [cfg.POOLING_SIZE, cfg.POOLING_SIZE],
+                                        name="crops")
     return crops
 
   def build_network(self, sess, is_training=True):
@@ -269,6 +271,7 @@ class mobilenetv1(Network):
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
+      rpn_cls_pred = tf.argmax(tf.reshape(rpn_cls_score_reshape, [-1, 2]), axis=1, name="rpn_cls_pred")
       rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
       rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
@@ -305,6 +308,7 @@ class mobilenetv1(Network):
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
       cls_score = slim.fully_connected(fc7, self._num_classes, weights_initializer=initializer,
                                        trainable=is_training, activation_fn=None, scope='cls_score')
+      cls_pred = tf.argmax(cls_score, axis=1, name="cls_pred")
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, weights_initializer=initializer_bbox,
                                        trainable=is_training,
@@ -312,8 +316,10 @@ class mobilenetv1(Network):
     self._predictions["rpn_cls_score"] = rpn_cls_score
     self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
     self._predictions["rpn_cls_prob"] = rpn_cls_prob
+    self._predictions["rpn_cls_pred"] = rpn_cls_pred
     self._predictions["rpn_bbox_pred"] = rpn_bbox_pred
     self._predictions["cls_score"] = cls_score
+    self._predictions["cls_pred"] = cls_pred
     self._predictions["cls_prob"] = cls_prob
     self._predictions["bbox_pred"] = bbox_pred
     self._predictions["rois"] = rois

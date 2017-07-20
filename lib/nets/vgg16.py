@@ -58,6 +58,7 @@ class vgg16(Network):
       # change it so that the score has 2 as its channel size
       rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
       rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
+      rpn_cls_pred = tf.argmax(tf.reshape(rpn_cls_score_reshape, [-1, 2]), axis=1, name="rpn_cls_pred")
       rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
       rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
                                   weights_initializer=initializer,
@@ -65,7 +66,7 @@ class vgg16(Network):
       if is_training:
         rois, roi_scores = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
         rpn_labels = self._anchor_target_layer(rpn_cls_score, "anchor")
-        # Try to have a determinestic order for the computing graph, for reproducibility
+        # Try to have a deterministic order for the computing graph, for reproducibility
         with tf.control_dependencies([rpn_labels]):
           rois, _ = self._proposal_target_layer(rois, roi_scores, "rpn_rois")
       else:
@@ -94,6 +95,7 @@ class vgg16(Network):
                                        trainable=is_training,
                                        activation_fn=None, scope='cls_score')
       cls_prob = self._softmax_layer(cls_score, "cls_prob")
+      cls_pred = tf.argmax(cls_score, axis=1, name="cls_pred")
       bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, 
                                        weights_initializer=initializer_bbox,
                                        trainable=is_training,
@@ -102,8 +104,10 @@ class vgg16(Network):
       self._predictions["rpn_cls_score"] = rpn_cls_score
       self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
       self._predictions["rpn_cls_prob"] = rpn_cls_prob
+      self._predictions["rpn_cls_pred"] = rpn_cls_pred
       self._predictions["rpn_bbox_pred"] = rpn_bbox_pred
       self._predictions["cls_score"] = cls_score
+      self._predictions["cls_pred"] = cls_pred
       self._predictions["cls_prob"] = cls_prob
       self._predictions["bbox_pred"] = bbox_pred
       self._predictions["rois"] = rois

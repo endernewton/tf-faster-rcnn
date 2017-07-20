@@ -89,14 +89,11 @@ def im_detect(sess, net, im):
   assert len(im_scales) == 1, "Only single-image batch implemented"
 
   im_blob = blobs['data']
-  # seems to have height, width, and image scales
-  # still not sure about the scale, maybe full image it is 1.
   blobs['im_info'] = np.array([[im_blob.shape[1], im_blob.shape[2], im_scales[0]]], dtype=np.float32)
 
   _, scores, bbox_pred, rois = net.test_image(sess, blobs['data'], blobs['im_info'])
   
   boxes = rois[:, 1:5] / im_scales[0]
-  # print(scores.shape, bbox_pred.shape, rois.shape, boxes.shape)
   scores = np.reshape(scores, [scores.shape[0], -1])
   bbox_pred = np.reshape(bbox_pred, [bbox_pred.shape[0], -1])
   if cfg.TEST.BBOX_REG:

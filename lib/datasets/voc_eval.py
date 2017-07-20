@@ -101,14 +101,14 @@ def voc_eval(detpath,
   # first load gt
   if not os.path.isdir(cachedir):
     os.mkdir(cachedir)
-  cachefile = os.path.join(cachedir, 'annots.pkl')
+  cachefile = os.path.join(cachedir, '%s_annots.pkl' % imagesetfile)
   # read list of images
   with open(imagesetfile, 'r') as f:
     lines = f.readlines()
   imagenames = [x.strip() for x in lines]
 
   if not os.path.isfile(cachefile):
-    # load annots
+    # load annotations
     recs = {}
     for i, imagename in enumerate(imagenames):
       recs[imagename] = parse_rec(annopath.format(imagename))

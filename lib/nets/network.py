@@ -41,7 +41,7 @@ class Network(object):
   def _add_image_summary(self, image, boxes):
     # add back mean
     image += cfg.PIXEL_MEANS
-    # bgr to rgb (opencv uses bgr)
+    # BGR to RGB (opencv uses BGR)
     channels = tf.unstack (image, axis=-1)
     image    = tf.stack ([channels[2], channels[1], channels[0]], axis=-1)
     # dims for normalization
@@ -124,7 +124,7 @@ class Network(object):
   def _crop_pool_layer(self, bottom, rois, name):
     with tf.variable_scope(name) as scope:
       batch_ids = tf.squeeze(tf.slice(rois, [0, 0], [-1, 1], name="batch_id"), [1])
-      # Get the normalized coordinates of bboxes
+      # Get the normalized coordinates of bounding boxes
       bottom_shape = tf.shape(bottom)
       height = (tf.to_float(bottom_shape[1]) - 1.) * np.float32(self._feat_stride[0])
       width = (tf.to_float(bottom_shape[2]) - 1.) * np.float32(self._feat_stride[0])
@@ -132,7 +132,7 @@ class Network(object):
       y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
       x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
       y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      # Won't be backpropagated to rois anyway, but to save time
+      # Won't be back-propagated to rois anyway, but to save time
       bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], axis=1))
       pre_pool_size = cfg.POOLING_SIZE * 2
       crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), [pre_pool_size, pre_pool_size], name="crops")
@@ -355,6 +355,7 @@ class Network(object):
   def test_image(self, sess, image, im_info):
     feed_dict = {self._image: image,
                  self._im_info: im_info}
+
     cls_score, cls_prob, bbox_pred, rois = sess.run([self._predictions["cls_score"],
                                                      self._predictions['cls_prob'],
                                                      self._predictions['bbox_pred'],
