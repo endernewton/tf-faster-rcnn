@@ -202,7 +202,7 @@ class Network(object):
       self._anchors = anchors
       self._anchor_length = anchor_length
 
-  def build_network(self, sess, is_training=True):
+  def _build_network(self, sess, is_training=True):
     raise NotImplementedError
 
   def _smooth_l1_loss(self, bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights, sigma=1.0, dim=[1]):
@@ -268,6 +268,63 @@ class Network(object):
 
     return loss
 
+  def _region_proposal(self, net_conv, is_training, initializer):
+    rpn = slim.conv2d(net_conv, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
+                        scope="rpn_conv/3x3")
+    self._act_summaries.append(rpn)
+    rpn_cls_score = slim.conv2d(rpn, self._num_anchors * 2, [1, 1], trainable=is_training,
+                                weights_initializer=initializer,
+                                padding='VALID', activation_fn=None, scope='rpn_cls_score')
+    # change it so that the score has 2 as its channel size
+    rpn_cls_score_reshape = self._reshape_layer(rpn_cls_score, 2, 'rpn_cls_score_reshape')
+    rpn_cls_prob_reshape = self._softmax_layer(rpn_cls_score_reshape, "rpn_cls_prob_reshape")
+    rpn_cls_pred = tf.argmax(tf.reshape(rpn_cls_score_reshape, [-1, 2]), axis=1, name="rpn_cls_pred")
+    rpn_cls_prob = self._reshape_layer(rpn_cls_prob_reshape, self._num_anchors * 2, "rpn_cls_prob")
+    rpn_bbox_pred = slim.conv2d(rpn, self._num_anchors * 4, [1, 1], trainable=is_training,
+                                weights_initializer=initializer,
+                                padding='VALID', activation_fn=None, scope='rpn_bbox_pred')
+    if is_training:
+      rois, roi_scores = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+      rpn_labels = self._anchor_target_layer(rpn_cls_score, "anchor")
+      # Try to have a deterministic order for the computing graph, for reproducibility
+      with tf.control_dependencies([rpn_labels]):
+        rois, _ = self._proposal_target_layer(rois, roi_scores, "rpn_rois")
+    else:
+      if cfg.TEST.MODE == 'nms':
+        rois, _ = self._proposal_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+      elif cfg.TEST.MODE == 'top':
+        rois, _ = self._proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, "rois")
+      else:
+        raise NotImplementedError
+
+    self._predictions["rpn_cls_score"] = rpn_cls_score
+    self._predictions["rpn_cls_score_reshape"] = rpn_cls_score_reshape
+    self._predictions["rpn_cls_prob"] = rpn_cls_prob
+    self._predictions["rpn_cls_pred"] = rpn_cls_pred
+    self._predictions["rpn_bbox_pred"] = rpn_bbox_pred
+    self._predictions["rois"] = rois
+
+    return rois
+
+  def _region_classification(self, fc7, is_training, initializer, initializer_bbox):
+    cls_score = slim.fully_connected(fc7, self._num_classes, 
+                                       weights_initializer=initializer,
+                                       trainable=is_training,
+                                       activation_fn=None, scope='cls_score')
+    cls_prob = self._softmax_layer(cls_score, "cls_prob")
+    cls_pred = tf.argmax(cls_score, axis=1, name="cls_pred")
+    bbox_pred = slim.fully_connected(fc7, self._num_classes * 4, 
+                                     weights_initializer=initializer_bbox,
+                                     trainable=is_training,
+                                     activation_fn=None, scope='bbox_pred')
+
+    self._predictions["cls_score"] = cls_score
+    self._predictions["cls_pred"] = cls_pred
+    self._predictions["cls_prob"] = cls_prob
+    self._predictions["bbox_pred"] = bbox_pred
+
+    return cls_prob, bbox_pred
+
   def create_architecture(self, sess, mode, num_classes, tag=None,
                           anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
@@ -303,7 +360,7 @@ class Network(object):
                     weights_regularizer=weights_regularizer,
                     biases_regularizer=biases_regularizer, 
                     biases_initializer=tf.constant_initializer(0.0)): 
-      rois, cls_prob, bbox_pred = self.build_network(sess, training)
+      rois, cls_prob, bbox_pred = self._build_network(sess, training)
 
     layers_to_output = {'rois': rois}
     layers_to_output.update(self._predictions)
