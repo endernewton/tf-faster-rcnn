@@ -74,7 +74,7 @@ _CONV_DEFS = [
     DepthSepConv(kernel=3, stride=1, depth=512),
     DepthSepConv(kernel=3, stride=1, depth=512),
     # use stride 1 for the 13th layer
-    DepthSepConv(kernel=3, stride=1, depth=1024),
+    DepthSepConv(kernel=3, stride=2, depth=1024),
     DepthSepConv(kernel=3, stride=1, depth=1024)
 ]
 
@@ -154,9 +154,9 @@ def mobilenet_v1_base(inputs,
         end_point = end_point_base + '_depthwise'
 
         net = separable_conv2d_same(net, conv_def.kernel,
-                                    stride=layer_stride,
-                                    rate=layer_rate,
-                                    scope=end_point)
+                                      stride=layer_stride,
+                                      rate=layer_rate,
+                                      scope=end_point)
 
         end_point = end_point_base + '_pointwise'
 

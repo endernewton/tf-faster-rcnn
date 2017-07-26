@@ -19,6 +19,7 @@ from layer_utils.proposal_layer import proposal_layer
 from layer_utils.proposal_top_layer import proposal_top_layer
 from layer_utils.anchor_target_layer import anchor_target_layer
 from layer_utils.proposal_target_layer import proposal_target_layer
+from utils.visualization import draw_bounding_boxes
 
 from model.config import cfg
 
@@ -38,25 +39,15 @@ class Network(object):
     self._event_summaries = {}
     self._variables_to_fix = {}
 
-  def _add_image_summary(self, image, boxes):
+  def _add_image_summary(self, image, gt_boxes, im_info):
     # add back mean
     image += cfg.PIXEL_MEANS
     # BGR to RGB (opencv uses BGR)
-    channels = tf.unstack (image, axis=-1)
-    image    = tf.stack ([channels[2], channels[1], channels[0]], axis=-1)
-    # dims for normalization
-    width  = tf.to_float(tf.shape(image)[2])
-    height = tf.to_float(tf.shape(image)[1])
-    # from [x1, y1, x2, y2, cls] to normalized [y1, x1, y1, x1]
-    cols = tf.unstack(boxes, axis=1)
-    boxes = tf.stack([cols[1] / height,
-                      cols[0] / width,
-                      cols[3] / height,
-                      cols[2] / width], axis=1)
-    # add batch dimension (assume batch_size==1)
-    assert image.get_shape()[0] == 1
-    boxes = tf.expand_dims(boxes, dim=0)
-    image = tf.image.draw_bounding_boxes(image, boxes)
+    image = tf.reverse(image, axis=[-1])
+    # use a customized visualization function to visualize the boxes
+    image = tf.py_func(draw_bounding_boxes, 
+                      [image, gt_boxes, im_info],
+                      tf.float32)
     
     return tf.summary.image('ground_truth', image)
 
@@ -379,7 +370,7 @@ class Network(object):
 
     val_summaries = []
     with tf.device("/cpu:0"):
-      val_summaries.append(self._add_image_summary(self._image, self._gt_boxes))
+      val_summaries.append(self._add_image_summary(self._image, self._gt_boxes, self._im_info))
       for key, var in self._event_summaries.items():
         val_summaries.append(tf.summary.scalar(key, var))
       for key, var in self._score_summaries.items():
