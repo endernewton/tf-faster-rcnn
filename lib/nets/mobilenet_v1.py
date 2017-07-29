@@ -74,7 +74,7 @@ _CONV_DEFS = [
     DepthSepConv(kernel=3, stride=1, depth=512),
     DepthSepConv(kernel=3, stride=1, depth=512),
     # use stride 1 for the 13th layer
-    DepthSepConv(kernel=3, stride=2, depth=1024),
+    DepthSepConv(kernel=3, stride=1, depth=1024),
     DepthSepConv(kernel=3, stride=1, depth=1024)
 ]
 
@@ -152,11 +152,11 @@ def mobilenet_v1_base(inputs,
 
       elif isinstance(conv_def, DepthSepConv):
         end_point = end_point_base + '_depthwise'
-
+        
         net = separable_conv2d_same(net, conv_def.kernel,
-                                      stride=layer_stride,
-                                      rate=layer_rate,
-                                      scope=end_point)
+                                    stride=layer_stride,
+                                    rate=layer_rate,
+                                    scope=end_point)
 
         end_point = end_point_base + '_pointwise'
 
@@ -209,24 +209,6 @@ class mobilenetv1(Network):
     Network.__init__(self, batch_size=batch_size)
     self._depth_multiplier = cfg.MOBILENET.DEPTH_MULTIPLIER
     self._scope = 'MobilenetV1'
-
-  def _crop_pool_layer(self, bottom, rois, name):
-    with tf.variable_scope(name) as scope:
-      batch_ids = tf.squeeze(tf.slice(rois, [0, 0], [-1, 1], name="batch_id"), [1])
-      # Get the normalized coordinates of bounding boxes
-      bottom_shape = tf.shape(bottom)
-      height = (tf.to_float(bottom_shape[1]) - 1.) * np.float32(self._feat_stride[0])
-      width = (tf.to_float(bottom_shape[2]) - 1.) * np.float32(self._feat_stride[0])
-      x1 = tf.slice(rois, [0, 1], [-1, 1], name="x1") / width
-      y1 = tf.slice(rois, [0, 2], [-1, 1], name="y1") / height
-      x2 = tf.slice(rois, [0, 3], [-1, 1], name="x2") / width
-      y2 = tf.slice(rois, [0, 4], [-1, 1], name="y2") / height
-      # Won't be back-propagated to rois anyway, but to save time
-      bboxes = tf.stop_gradient(tf.concat([y1, x1, y2, x2], 1))
-      crops = tf.image.crop_and_resize(bottom, bboxes, tf.to_int32(batch_ids), 
-                                        [cfg.POOLING_SIZE, cfg.POOLING_SIZE],
-                                        name="crops")
-    return crops
 
   def _build_network(self, sess, is_training=True):
     # select initializers
