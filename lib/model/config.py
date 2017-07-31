@@ -31,7 +31,7 @@ __C.TRAIN.WEIGHT_DECAY = 0.0005
 __C.TRAIN.GAMMA = 0.1
 
 # Step size for reducing the learning rate, currently only support one step
-__C.TRAIN.STEPSIZE = 30000
+__C.TRAIN.STEPSIZE = [30000]
 
 # Iteration intervals for showing the loss during training, on command line interface
 __C.TRAIN.DISPLAY = 10

@@ -39,7 +39,7 @@ class Network(object):
     self._event_summaries = {}
     self._variables_to_fix = {}
 
-  def _add_image_summary(self, image, gt_boxes, im_info):
+  def _add_gt_image_summary(self, image, gt_boxes, im_info):
     # add back mean
     image += cfg.PIXEL_MEANS
     # BGR to RGB (opencv uses BGR)
@@ -370,7 +370,7 @@ class Network(object):
 
     val_summaries = []
     with tf.device("/cpu:0"):
-      val_summaries.append(self._add_image_summary(self._image, self._gt_boxes, self._im_info))
+      val_summaries.append(self._add_gt_image_summary(self._image, self._gt_boxes, self._im_info))
       for key, var in self._event_summaries.items():
         val_summaries.append(tf.summary.scalar(key, var))
       for key, var in self._score_summaries.items():
