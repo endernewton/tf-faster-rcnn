@@ -241,6 +241,8 @@ class mobilenetv1(Network):
                               starting_layer=12,
                               depth_multiplier=self._depth_multiplier,
                               scope=self._scope)
+      # average pooling done by reduce_mean
+      fc7 = tf.reduce_mean(fc7, axis=[1, 2])
     return fc7
 
   def _build_network(self, is_training=True):
@@ -266,8 +268,6 @@ class mobilenetv1(Network):
 
     fc7 = self._head_to_tail(pool5, is_training)
     with tf.variable_scope(self._scope, 'MobilenetV1'):
-      # average pooling done by reduce_mean
-      fc7 = tf.reduce_mean(fc7, axis=[1, 2])
       # region classification
       cls_prob, bbox_pred = self._region_classification(fc7, is_training, 
                                                         initializer, initializer_bbox)
