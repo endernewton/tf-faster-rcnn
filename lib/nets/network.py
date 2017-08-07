@@ -367,23 +367,22 @@ class Network(object):
       self._add_losses()
       layers_to_output.update(self._losses)
 
-    layers_to_output.update(self._predictions)
+      val_summaries = []
+      with tf.device("/cpu:0"):
+        val_summaries.append(self._add_gt_image_summary(self._image, self._gt_boxes, self._im_info))
+        for key, var in self._event_summaries.items():
+          val_summaries.append(tf.summary.scalar(key, var))
+        for key, var in self._score_summaries.items():
+          self._add_score_summary(key, var)
+        for var in self._act_summaries:
+          self._add_act_summary(var)
+        for var in self._train_summaries:
+          self._add_train_summary(var)
 
-    val_summaries = []
-    with tf.device("/cpu:0"):
-      val_summaries.append(self._add_gt_image_summary(self._image, self._gt_boxes, self._im_info))
-      for key, var in self._event_summaries.items():
-        val_summaries.append(tf.summary.scalar(key, var))
-      for key, var in self._score_summaries.items():
-        self._add_score_summary(key, var)
-      for var in self._act_summaries:
-        self._add_act_summary(var)
-      for var in self._train_summaries:
-        self._add_train_summary(var)
-
-    self._summary_op = tf.summary.merge_all()
-    if not testing:
+      self._summary_op = tf.summary.merge_all()
       self._summary_op_val = tf.summary.merge(val_summaries)
+
+    layers_to_output.update(self._predictions)
 
     return layers_to_output
 
