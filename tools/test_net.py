@@ -42,7 +42,7 @@ def parse_args():
                         help='tag of the model',
                         default='', type=str)
   parser.add_argument('--net', dest='net',
-                      help='vgg16, res50, res101, res152',
+                      help='vgg16, res50, res101, res152, mobile',
                       default='res50', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                         help='set config keys', default=None,
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     raise NotImplementedError
 
   # load model
-  net.create_architecture(sess, "TEST", imdb.num_classes, tag='default',
+  net.create_architecture("TEST", imdb.num_classes, tag='default',
                           anchor_scales=cfg.ANCHOR_SCALES,
                           anchor_ratios=cfg.ANCHOR_RATIOS)
 

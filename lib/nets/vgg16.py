@@ -20,7 +20,7 @@ class vgg16(Network):
   def __init__(self, batch_size=1):
     Network.__init__(self, batch_size=batch_size)
 
-  def _build_network(self, sess, is_training=True):
+  def _build_network(self, is_training=True):
     with tf.variable_scope('vgg_16', 'vgg_16'):
       # select initializers
       if cfg.TRAIN.TRUNCATED:

@@ -46,7 +46,7 @@ def parse_args():
                       help='tag of the model',
                       default=None, type=str)
   parser.add_argument('--net', dest='net',
-                      help='vgg16, res50, res101, res152',
+                      help='vgg16, res50, res101, res152, mobile',
                       default='res50', type=str)
   parser.add_argument('--set', dest='set_cfgs',
                       help='set config keys', default=None,

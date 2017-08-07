@@ -83,7 +83,7 @@ class resnetv1(Network):
 
     return net
 
-  def _build_network(self, sess, is_training=True):
+  def _build_network(self, is_training=True):
     # select initializers
     if cfg.TRAIN.TRUNCATED:
       initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)

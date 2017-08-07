@@ -193,7 +193,7 @@ class Network(object):
       self._anchors = anchors
       self._anchor_length = anchor_length
 
-  def _build_network(self, sess, is_training=True):
+  def _build_network(self, is_training=True):
     raise NotImplementedError
 
   def _smooth_l1_loss(self, bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights, sigma=1.0, dim=[1]):
@@ -316,7 +316,7 @@ class Network(object):
 
     return cls_prob, bbox_pred
 
-  def create_architecture(self, sess, mode, num_classes, tag=None,
+  def create_architecture(self, mode, num_classes, tag=None,
                           anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
     self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
@@ -351,7 +351,7 @@ class Network(object):
                     weights_regularizer=weights_regularizer,
                     biases_regularizer=biases_regularizer, 
                     biases_initializer=tf.constant_initializer(0.0)): 
-      rois, cls_prob, bbox_pred = self._build_network(sess, training)
+      rois, cls_prob, bbox_pred = self._build_network(training)
 
     layers_to_output = {'rois': rois}
 

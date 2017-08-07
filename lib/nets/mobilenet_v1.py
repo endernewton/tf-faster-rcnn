@@ -210,7 +210,7 @@ class mobilenetv1(Network):
     self._depth_multiplier = cfg.MOBILENET.DEPTH_MULTIPLIER
     self._scope = 'MobilenetV1'
 
-  def _build_network(self, sess, is_training=True):
+  def _build_network(self, is_training=True):
     # select initializers
     if cfg.TRAIN.TRUNCATED:
       initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
