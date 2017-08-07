@@ -83,6 +83,40 @@ class resnetv1(Network):
 
     return net
 
+  def _image_to_head(self, is_training):
+    assert (0 <= cfg.RESNET.FIXED_BLOCKS <= 3)
+    # Now the base is always fixed during training
+    with slim.arg_scope(resnet_arg_scope(is_training=False)):
+      net_conv = self._build_base()
+    if cfg.RESNET.FIXED_BLOCKS > 0:
+      with slim.arg_scope(resnet_arg_scope(is_training=False)):
+        net_conv, _ = resnet_v1.resnet_v1(net_conv,
+                                     self._blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                     global_pool=False,
+                                     include_root_block=False,
+                                     scope=self._resnet_scope)
+    if cfg.RESNET.FIXED_BLOCKS < 3:
+      with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
+        net_conv, _ = resnet_v1.resnet_v1(net_conv,
+                                           self._blocks[cfg.RESNET.FIXED_BLOCKS:-1],
+                                           global_pool=False,
+                                           include_root_block=False,
+                                           scope=self._resnet_scope)
+
+    self._act_summaries.append(net_conv)
+    self._layers['head'] = net_conv
+
+    return net_conv
+
+  def _head_to_tail(self, pool5, is_training):
+    with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
+      fc7, _ = resnet_v1.resnet_v1(pool5,
+                                   self._blocks[-1:],
+                                   global_pool=False,
+                                   include_root_block=False,
+                                   scope=self._resnet_scope)
+    return fc7
+
   def _build_network(self, is_training=True):
     # select initializers
     if cfg.TRAIN.TRUNCATED:
@@ -94,21 +128,21 @@ class resnetv1(Network):
 
     # choose different blocks for different number of layers
     if self._num_layers == 50:
-      blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
+      self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
                 # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=6, stride=1),
                 resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 101:
-      blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
+      self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
                 # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=23, stride=1),
                 resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 152:
-      blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
+      self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
                 resnet_v1_block('block2', base_depth=128, num_units=8, stride=2),
                 # use stride 1 for the last conv4 layer
                 resnet_v1_block('block3', base_depth=256, num_units=36, stride=1),
@@ -118,27 +152,7 @@ class resnetv1(Network):
       # other numbers are not supported
       raise NotImplementedError
 
-    assert (0 <= cfg.RESNET.FIXED_BLOCKS <= 3)
-    # Now the base is always fixed during training
-    with slim.arg_scope(resnet_arg_scope(is_training=False)):
-      net_conv = self._build_base()
-    if cfg.RESNET.FIXED_BLOCKS > 0:
-      with slim.arg_scope(resnet_arg_scope(is_training=False)):
-        net_conv, _ = resnet_v1.resnet_v1(net_conv,
-                                     blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                     global_pool=False,
-                                     include_root_block=False,
-                                     scope=self._resnet_scope)
-    if cfg.RESNET.FIXED_BLOCKS < 3:
-      with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-        net_conv, _ = resnet_v1.resnet_v1(net_conv,
-                                           blocks[cfg.RESNET.FIXED_BLOCKS:-1],
-                                           global_pool=False,
-                                           include_root_block=False,
-                                           scope=self._resnet_scope)
-
-    self._act_summaries.append(net_conv)
-    self._layers['head'] = net_conv
+    net_conv = self._image_to_head(is_training)
     with tf.variable_scope(self._resnet_scope, self._resnet_scope):
       # build the anchors for the image
       self._anchor_component()
@@ -150,13 +164,7 @@ class resnetv1(Network):
       else:
         raise NotImplementedError
 
-    with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
-      fc7, _ = resnet_v1.resnet_v1(pool5,
-                                   blocks[-1:],
-                                   global_pool=False,
-                                   include_root_block=False,
-                                   scope=self._resnet_scope)
-
+    fc7 = self._head_to_tail(pool5, is_training)
     with tf.variable_scope(self._resnet_scope, self._resnet_scope):
       # average pooling done by reduce_mean
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])

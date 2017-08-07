@@ -316,6 +316,12 @@ class Network(object):
 
     return cls_prob, bbox_pred
 
+  def _image_to_head(self, is_training):
+    raise NotImplementedError
+
+  def _head_to_tail(self, pool5, is_training):
+    raise NotImplementedError
+
   def create_architecture(self, mode, num_classes, tag=None,
                           anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
     self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])

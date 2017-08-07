@@ -210,15 +210,7 @@ class mobilenetv1(Network):
     self._depth_multiplier = cfg.MOBILENET.DEPTH_MULTIPLIER
     self._scope = 'MobilenetV1'
 
-  def _build_network(self, is_training=True):
-    # select initializers
-    if cfg.TRAIN.TRUNCATED:
-      initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
-      initializer_bbox = tf.truncated_normal_initializer(mean=0.0, stddev=0.001)
-    else:
-      initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
-      initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
-
+  def _image_to_head(self, is_training):
     # Base bottleneck
     assert (0 <= cfg.MOBILENET.FIXED_LAYERS <= 12)
     net_conv = self._image
@@ -236,9 +228,31 @@ class mobilenetv1(Network):
                                       starting_layer=cfg.MOBILENET.FIXED_LAYERS,
                                       depth_multiplier=self._depth_multiplier,
                                       scope=self._scope)
-    
+
     self._act_summaries.append(net_conv)
     self._layers['head'] = net_conv
+
+    return net_conv
+
+  def _head_to_tail(self, pool5, is_training):
+    with slim.arg_scope(mobilenet_v1_arg_scope(is_training=is_training)):
+      fc7 = mobilenet_v1_base(pool5,
+                              _CONV_DEFS[12:],
+                              starting_layer=12,
+                              depth_multiplier=self._depth_multiplier,
+                              scope=self._scope)
+    return fc7
+
+  def _build_network(self, is_training=True):
+    # select initializers
+    if cfg.TRAIN.TRUNCATED:
+      initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
+      initializer_bbox = tf.truncated_normal_initializer(mean=0.0, stddev=0.001)
+    else:
+      initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
+      initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
+    
+    net_conv = self._image_to_head(is_training)
     with tf.variable_scope(self._scope, 'MobilenetV1'):
       # build the anchors for the image
       self._anchor_component()
@@ -250,13 +264,7 @@ class mobilenetv1(Network):
       else:
         raise NotImplementedError
 
-    with slim.arg_scope(mobilenet_v1_arg_scope(is_training=is_training)):
-      fc7 = mobilenet_v1_base(pool5,
-                              _CONV_DEFS[12:],
-                              starting_layer=12,
-                              depth_multiplier=self._depth_multiplier,
-                              scope=self._scope)
-
+    fc7 = self._head_to_tail(pool5, is_training)
     with tf.variable_scope(self._scope, 'MobilenetV1'):
       # average pooling done by reduce_mean
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
