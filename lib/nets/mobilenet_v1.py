@@ -255,7 +255,7 @@ class mobilenetv1(Network):
       initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
     
     net_conv = self._image_to_head(is_training)
-    with tf.variable_scope(self._scope, 'MobilenetV1'):
+    with tf.variable_scope(self._scope, self._scope):
       # build the anchors for the image
       self._anchor_component()
       # region proposal network
@@ -267,7 +267,7 @@ class mobilenetv1(Network):
         raise NotImplementedError
 
     fc7 = self._head_to_tail(pool5, is_training)
-    with tf.variable_scope(self._scope, 'MobilenetV1'):
+    with tf.variable_scope(self._scope, self._scope):
       # region classification
       cls_prob, bbox_pred = self._region_classification(fc7, is_training, 
                                                         initializer, initializer_bbox)
