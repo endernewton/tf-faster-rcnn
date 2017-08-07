@@ -49,7 +49,7 @@ class Network(object):
                       [image, gt_boxes, im_info],
                       tf.float32)
     
-    return tf.summary.image('ground_truth', image)
+    return tf.summary.image('GROUND_TRUTH', image)
 
   def _add_act_summary(self, tensor):
     tf.summary.histogram('ACT/' + tensor.op.name + '/activations', tensor)
@@ -212,7 +212,7 @@ class Network(object):
     return loss_box
 
   def _add_losses(self, sigma_rpn=3.0):
-    with tf.variable_scope('loss_' + self._tag) as scope:
+    with tf.variable_scope('LOSS_' + self._tag) as scope:
       # RPN, class loss
       rpn_cls_score = tf.reshape(self._predictions['rpn_cls_score_reshape'], [-1, 2])
       rpn_label = tf.reshape(self._anchor_targets['rpn_labels'], [-1])
@@ -354,12 +354,11 @@ class Network(object):
       rois, cls_prob, bbox_pred = self._build_network(sess, training)
 
     layers_to_output = {'rois': rois}
-    layers_to_output.update(self._predictions)
 
     for var in tf.trainable_variables():
       self._train_summaries.append(var)
 
-    if mode == 'TEST':
+    if testing:
       stds = np.tile(np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS), (self._num_classes))
       means = np.tile(np.array(cfg.TRAIN.BBOX_NORMALIZE_MEANS), (self._num_classes))
       self._predictions["bbox_pred"] *= stds
@@ -367,6 +366,8 @@ class Network(object):
     else:
       self._add_losses()
       layers_to_output.update(self._losses)
+
+    layers_to_output.update(self._predictions)
 
     val_summaries = []
     with tf.device("/cpu:0"):

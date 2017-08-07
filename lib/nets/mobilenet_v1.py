@@ -176,12 +176,12 @@ def mobilenet_v1_arg_scope(is_training=True,
                            stddev=0.09,
                            regularize_depthwise=cfg.MOBILENET.REGU_DEPTH):
   batch_norm_params = {
-      'is_training': cfg.TRAIN.BN_TRAIN and is_training,
+      'is_training': False,
       'center': True,
       'scale': True,
       'decay': 0.9997,
       'epsilon': 0.001,
-      'trainable': cfg.TRAIN.BN_TRAIN,
+      'trainable': False,
   }
 
   # Set weight_decay for weights in Conv and DepthSepConv layers.
