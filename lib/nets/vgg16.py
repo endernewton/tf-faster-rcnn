@@ -21,8 +21,8 @@ class vgg16(Network):
     Network.__init__(self, batch_size=batch_size)
     self._scope = 'vgg_16'
 
-  def _image_to_head(self, is_training):
-    with tf.variable_scope(self._scope, self._scope):
+  def _image_to_head(self, is_training, reuse=False):
+    with tf.variable_scope(self._scope, self._scope, reuse=reuse):
       net = slim.repeat(self._image, 2, slim.conv2d, 64, [3, 3],
                           trainable=False, scope='conv1')
       net = slim.max_pool2d(net, [2, 2], padding='SAME', scope='pool1')
@@ -43,8 +43,8 @@ class vgg16(Network):
     
     return net
 
-  def _head_to_tail(self, pool5, is_training):
-    with tf.variable_scope(self._scope, self._scope):
+  def _head_to_tail(self, pool5, is_training, reuse=False):
+    with tf.variable_scope(self._scope, self._scope, reuse=reuse):
       pool5_flat = slim.flatten(pool5, scope='flatten')
       fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
       if is_training:

@@ -33,20 +33,25 @@ class Network(object):
     self._anchor_targets = {}
     self._proposal_targets = {}
     self._layers = {}
+    self._gt_image = None
     self._act_summaries = []
     self._score_summaries = {}
     self._train_summaries = []
     self._event_summaries = {}
     self._variables_to_fix = {}
 
-  def _add_gt_image_summary(self, image, gt_boxes, im_info):
+  def _add_gt_image(self):
     # add back mean
-    image += cfg.PIXEL_MEANS
+    image = self._image + cfg.PIXEL_MEANS
     # BGR to RGB (opencv uses BGR)
-    image = tf.reverse(image, axis=[-1])
+    self._gt_image = tf.reverse(image, axis=[-1])
+
+  def _add_gt_image_summary(self):
     # use a customized visualization function to visualize the boxes
+    if not self._gt_image:
+      self._add_gt_image()
     image = tf.py_func(draw_bounding_boxes, 
-                      [image, gt_boxes, im_info],
+                      [self._gt_image, self._gt_boxes, self._im_info],
                       tf.float32)
     
     return tf.summary.image('GROUND_TRUTH', image)
@@ -344,10 +349,10 @@ class Network(object):
 
     return cls_prob, bbox_pred
 
-  def _image_to_head(self, is_training):
+  def _image_to_head(self, is_training, reuse=False):
     raise NotImplementedError
 
-  def _head_to_tail(self, pool5, is_training):
+  def _head_to_tail(self, pool5, is_training, reuse=False):
     raise NotImplementedError
 
   def create_architecture(self, mode, num_classes, tag=None,
@@ -403,7 +408,7 @@ class Network(object):
 
       val_summaries = []
       with tf.device("/cpu:0"):
-        val_summaries.append(self._add_gt_image_summary(self._image, self._gt_boxes, self._im_info))
+        val_summaries.append(self._add_gt_image_summary())
         for key, var in self._event_summaries.items():
           val_summaries.append(tf.summary.scalar(key, var))
         for key, var in self._score_summaries.items():

@@ -84,7 +84,7 @@ class resnetv1(Network):
 
     return net
 
-  def _image_to_head(self, is_training):
+  def _image_to_head(self, is_training, reuse=False):
     assert (0 <= cfg.RESNET.FIXED_BLOCKS <= 3)
     # Now the base is always fixed during training
     with slim.arg_scope(resnet_arg_scope(is_training=False)):
@@ -95,6 +95,7 @@ class resnetv1(Network):
                                      self._blocks[0:cfg.RESNET.FIXED_BLOCKS],
                                      global_pool=False,
                                      include_root_block=False,
+                                     reuse=reuse,
                                      scope=self._scope)
     if cfg.RESNET.FIXED_BLOCKS < 3:
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
@@ -102,6 +103,7 @@ class resnetv1(Network):
                                            self._blocks[cfg.RESNET.FIXED_BLOCKS:-1],
                                            global_pool=False,
                                            include_root_block=False,
+                                           reuse=reuse,
                                            scope=self._scope)
 
     self._act_summaries.append(net_conv)
@@ -109,12 +111,13 @@ class resnetv1(Network):
 
     return net_conv
 
-  def _head_to_tail(self, pool5, is_training):
+  def _head_to_tail(self, pool5, is_training, reuse=False):
     with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
       fc7, _ = resnet_v1.resnet_v1(pool5,
                                    self._blocks[-1:],
                                    global_pool=False,
                                    include_root_block=False,
+                                   reuse=reuse,
                                    scope=self._scope)
       # average pooling done by reduce_mean
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
