@@ -18,7 +18,6 @@ import math
 
 from utils.timer import Timer
 from utils.cython_nms import nms, nms_new
-from utils.boxes_grid import get_boxes_grid
 from utils.blob import im_list_to_blob
 
 from model.config import cfg, get_output_dir
