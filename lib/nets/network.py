@@ -48,7 +48,7 @@ class Network(object):
 
   def _add_gt_image_summary(self):
     # use a customized visualization function to visualize the boxes
-    if not self._gt_image:
+    if self._gt_image is None:
       self._add_gt_image()
     image = tf.py_func(draw_bounding_boxes, 
                       [self._gt_image, self._gt_boxes, self._im_info],
@@ -80,7 +80,7 @@ class Network(object):
       return to_tf
 
   def _softmax_layer(self, bottom, name):
-    if name == 'rpn_cls_prob_reshape':
+    if name.startswith('rpn_cls_prob_reshape'):
       input_shape = tf.shape(bottom)
       bottom_reshaped = tf.reshape(bottom, [-1, input_shape[-1]])
       reshaped_score = tf.nn.softmax(bottom_reshaped, name=name)
@@ -260,24 +260,19 @@ class Network(object):
       rpn_bbox_targets = self._anchor_targets['rpn_bbox_targets']
       rpn_bbox_inside_weights = self._anchor_targets['rpn_bbox_inside_weights']
       rpn_bbox_outside_weights = self._anchor_targets['rpn_bbox_outside_weights']
-
       rpn_loss_box = self._smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights,
                                           rpn_bbox_outside_weights, sigma=sigma_rpn, dim=[1, 2, 3])
 
       # RCNN, class loss
       cls_score = self._predictions["cls_score"]
       label = tf.reshape(self._proposal_targets["labels"], [-1])
-
-      cross_entropy = tf.reduce_mean(
-        tf.nn.sparse_softmax_cross_entropy_with_logits(
-          logits=tf.reshape(cls_score, [-1, self._num_classes]), labels=label))
+      cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=cls_score, labels=label))
 
       # RCNN, bbox loss
       bbox_pred = self._predictions['bbox_pred']
       bbox_targets = self._proposal_targets['bbox_targets']
       bbox_inside_weights = self._proposal_targets['bbox_inside_weights']
       bbox_outside_weights = self._proposal_targets['bbox_outside_weights']
-
       loss_box = self._smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights)
 
       self._losses['cross_entropy'] = cross_entropy
