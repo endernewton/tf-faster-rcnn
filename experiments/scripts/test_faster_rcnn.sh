@@ -62,7 +62,7 @@ if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
     --tag ${EXTRA_ARGS_SLUG} \
     --net ${NET} \
     --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
-          GPU_ID ${GPU_ID} ${EXTRA_ARGS}
+          ${EXTRA_ARGS}
 else
   CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/test_net.py \
     --imdb ${TEST_IMDB} \
@@ -70,6 +70,6 @@ else
     --cfg experiments/cfgs/${NET}.yml \
     --net ${NET} \
     --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
-          GPU_ID ${GPU_ID} ${EXTRA_ARGS}
+          ${EXTRA_ARGS}
 fi
 
