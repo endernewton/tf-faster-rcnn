@@ -255,8 +255,8 @@ class SolverWrapper(object):
       rate, last_snapshot_iter, stepsizes, np_paths, ss_paths = self.initialize(sess)
     else:
       rate, last_snapshot_iter, stepsizes, np_paths, ss_paths = self.restore(sess, 
-                                                                            str(nfiles[-1]), 
-                                                                            str(sfiles[-1]))
+                                                                            str(sfiles[-1]), 
+                                                                            str(nfiles[-1]))
     timer = Timer()
     iter = last_snapshot_iter + 1
     last_summary_time = time.time()
