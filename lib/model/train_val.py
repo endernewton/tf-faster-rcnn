@@ -203,8 +203,8 @@ class SolverWrapper(object):
 
   def restore(self, sess, sfile, nfile):
     # Get the most recent snapshot and restore
-    np_paths = [sfile]
-    ss_paths = [nfile]
+    np_paths = [nfile]
+    ss_paths = [sfile]
     # Restore model from snapshots
     last_snapshot_iter = self.from_snapshot(sess, sfile, nfile)
     # Set the learning rate
