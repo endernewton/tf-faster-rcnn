@@ -80,7 +80,7 @@ class SolverWrapper(object):
     return filename, nfilename
 
   def from_snapshot(self, sess, sfile, nfile):
-    print('Restoring model snapshots from {:s}'.format(sfiles[-1]))
+    print('Restoring model snapshots from {:s}'.format(sfile))
     self.saver.restore(sess, sfile)
     print('Restored.')
     # Needs to restore the other hyper-parameters/states for training, (TODO xinlei) I have
@@ -363,7 +363,7 @@ def filter_roidb(roidb):
 def train_net(network, imdb, roidb, valroidb, output_dir, tb_dir,
               pretrained_model=None,
               max_iters=40000):
-  """Train a Fast R-CNN network."""
+  """Train a Faster R-CNN network."""
   roidb = filter_roidb(roidb)
   valroidb = filter_roidb(valroidb)
 
