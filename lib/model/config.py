@@ -281,6 +281,9 @@ __C.ANCHOR_SCALES = [8,16,32]
 # Anchor ratios for RPN
 __C.ANCHOR_RATIOS = [0.5,1,2]
 
+# Number of filters for the RPN layer
+__C.RPN_CHANNELS = 512
+
 
 def get_output_dir(imdb, weights_filename):
   """Return the directory where experimental artifacts are placed.
