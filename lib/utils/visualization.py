@@ -39,7 +39,14 @@ STANDARD_COLORS = [
     'WhiteSmoke', 'Yellow', 'YellowGreen'
 ]
 
-def draw_single_box(image, xmin, ymin, xmax, ymax, display_str, font, color='black', thickness=4):
+NUM_COLORS = len(STANDARD_COLORS)
+
+try:
+  FONT = ImageFont.truetype('arial.ttf', 24)
+except IOError:
+  FONT = ImageFont.load_default()
+
+def _draw_single_box(image, xmin, ymin, xmax, ymax, display_str, font, color='black', thickness=4):
   draw = ImageDraw.Draw(image)
   (left, right, top, bottom) = (xmin, xmax, ymin, ymax)
   draw.line([(left, top), (left, bottom), (right, bottom),
@@ -62,26 +69,20 @@ def draw_single_box(image, xmin, ymin, xmax, ymax, display_str, font, color='bla
 
 def draw_bounding_boxes(image, gt_boxes, im_info):
   num_boxes = gt_boxes.shape[0]
-  num_colors = len(STANDARD_COLORS)
-  im_info = im_info[0]
+  gt_boxes_new = gt_boxes.copy()
+  gt_boxes_new[:,:4] = np.round(gt_boxes_new[:,:4].copy() / im_info[2])
   disp_image = Image.fromarray(np.uint8(image[0]))
 
-  try:
-    font = ImageFont.truetype('arial.ttf', 24)
-  except IOError:
-    font = ImageFont.load_default()
-
   for i in xrange(num_boxes):
-    this_class = int(gt_boxes[i, 4])
-    disp_image = draw_single_box(disp_image, 
-                                gt_boxes[i, 0],
-                                gt_boxes[i, 1],
-                                gt_boxes[i, 2],
-                                gt_boxes[i, 3],
-                                'N%d-C%d' % (i, this_class),
-                                font,
-                                color=STANDARD_COLORS[this_class % num_colors])
+    this_class = int(gt_boxes_new[i, 4])
+    disp_image = _draw_single_box(disp_image, 
+                                gt_boxes_new[i, 0],
+                                gt_boxes_new[i, 1],
+                                gt_boxes_new[i, 2],
+                                gt_boxes_new[i, 3],
+                                'N%02d-C%02d' % (i, this_class),
+                                FONT,
+                                color=STANDARD_COLORS[this_class % NUM_COLORS])
 
   image[0, :] = np.array(disp_image)
   return image
-
