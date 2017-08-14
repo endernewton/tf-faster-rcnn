@@ -17,7 +17,7 @@ import os
 import math
 
 from utils.timer import Timer
-from utils.cython_nms import nms, nms_new
+from utils.cython_nms import nms
 from utils.blob import im_list_to_blob
 
 from model.config import cfg, get_output_dir
@@ -88,7 +88,7 @@ def im_detect(sess, net, im):
   assert len(im_scales) == 1, "Only single-image batch implemented"
 
   im_blob = blobs['data']
-  blobs['im_info'] = np.array([[im_blob.shape[1], im_blob.shape[2], im_scales[0]]], dtype=np.float32)
+  blobs['im_info'] = np.array([im_blob.shape[1], im_blob.shape[2], im_scales[0]], dtype=np.float32)
 
   _, scores, bbox_pred, rois = net.test_image(sess, blobs['data'], blobs['im_info'])
   

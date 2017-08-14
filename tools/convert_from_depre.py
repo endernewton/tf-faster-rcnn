@@ -200,6 +200,6 @@ if __name__ == '__main__':
   input_dir = output_dir.replace('/vgg16/', '/vgg16_depre/')
   print('Input will be imported from `{:s}`'.format(input_dir))
 
-  net = vgg16(batch_size=cfg.TRAIN.IMS_PER_BATCH)
+  net = vgg16()
 
   convert_from_depre(net, imdb, input_dir, output_dir, args.snapshot, args.max_iters)

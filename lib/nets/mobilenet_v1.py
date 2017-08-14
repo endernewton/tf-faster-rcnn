@@ -173,9 +173,7 @@ def mobilenet_v1_base(inputs,
 
 # Modified arg_scope to incorporate configs
 def mobilenet_v1_arg_scope(is_training=True,
-                           weight_decay=cfg.MOBILENET.WEIGHT_DECAY,
-                           stddev=0.09,
-                           regularize_depthwise=cfg.MOBILENET.REGU_DEPTH):
+                           stddev=0.09):
   batch_norm_params = {
       'is_training': False,
       'center': True,
@@ -187,8 +185,8 @@ def mobilenet_v1_arg_scope(is_training=True,
 
   # Set weight_decay for weights in Conv and DepthSepConv layers.
   weights_init = tf.truncated_normal_initializer(stddev=stddev)
-  regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
-  if regularize_depthwise:
+  regularizer = tf.contrib.layers.l2_regularizer(cfg.MOBILENET.WEIGHT_DECAY)
+  if cfg.MOBILENET.REGU_DEPTH:
     depthwise_regularizer = regularizer
   else:
     depthwise_regularizer = None
@@ -206,8 +204,10 @@ def mobilenet_v1_arg_scope(is_training=True,
           return sc
 
 class mobilenetv1(Network):
-  def __init__(self, batch_size=1):
-    Network.__init__(self, batch_size=batch_size)
+  def __init__(self):
+    Network.__init__(self)
+    self._feat_stride = [16, ]
+    self._feat_compress = [1. / float(self._feat_stride[0]), ]
     self._depth_multiplier = cfg.MOBILENET.DEPTH_MULTIPLIER
     self._scope = 'MobilenetV1'
 

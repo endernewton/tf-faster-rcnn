@@ -24,10 +24,7 @@ from utils.visualization import draw_bounding_boxes
 from model.config import cfg
 
 class Network(object):
-  def __init__(self, batch_size=1):
-    self._feat_stride = [16, ]
-    self._feat_compress = [1. / 16., ]
-    self._batch_size = batch_size
+  def __init__(self):
     self._predictions = {}
     self._losses = {}
     self._anchor_targets = {}
@@ -44,7 +41,8 @@ class Network(object):
     # add back mean
     image = self._image + cfg.PIXEL_MEANS
     # BGR to RGB (opencv uses BGR)
-    self._gt_image = tf.reverse(image, axis=[-1])
+    resized = tf.image.resize_bilinear(image, tf.to_int32(self._im_info[:2] / self._im_info[2]))
+    self._gt_image = tf.reverse(resized, axis=[-1])
 
   def _add_gt_image_summary(self):
     # use a customized visualization function to visualize the boxes
@@ -52,7 +50,7 @@ class Network(object):
       self._add_gt_image()
     image = tf.py_func(draw_bounding_boxes, 
                       [self._gt_image, self._gt_boxes, self._im_info],
-                      tf.float32)
+                      tf.float32, name="gt_boxes")
     
     return tf.summary.image('GROUND_TRUTH', image)
 
@@ -74,7 +72,7 @@ class Network(object):
       to_caffe = tf.transpose(bottom, [0, 3, 1, 2])
       # then force it to have channel 2
       reshaped = tf.reshape(to_caffe,
-                            tf.concat(axis=0, values=[[self._batch_size], [num_dim, -1], [input_shape[2]]]))
+                            tf.concat(axis=0, values=[[1, num_dim, -1], [input_shape[2]]]))
       # then swap the channel back
       to_tf = tf.transpose(reshaped, [0, 2, 3, 1])
       return to_tf
@@ -92,7 +90,7 @@ class Network(object):
       rois, rpn_scores = tf.py_func(proposal_top_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info,
                                      self._feat_stride, self._anchors, self._num_anchors],
-                                    [tf.float32, tf.float32])
+                                    [tf.float32, tf.float32], name="proposal_top")
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
 
@@ -103,7 +101,7 @@ class Network(object):
       rois, rpn_scores = tf.py_func(proposal_layer,
                                     [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
                                      self._feat_stride, self._anchors, self._num_anchors],
-                                    [tf.float32, tf.float32])
+                                    [tf.float32, tf.float32], name="proposal")
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
 
@@ -143,7 +141,8 @@ class Network(object):
       rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = tf.py_func(
         anchor_target_layer,
         [rpn_cls_score, self._gt_boxes, self._im_info, self._feat_stride, self._anchors, self._num_anchors],
-        [tf.float32, tf.float32, tf.float32, tf.float32])
+        [tf.float32, tf.float32, tf.float32, tf.float32],
+        name="anchor_target")
 
       rpn_labels.set_shape([1, 1, None, None])
       rpn_bbox_targets.set_shape([1, None, None, self._num_anchors * 4])
@@ -165,7 +164,8 @@ class Network(object):
       rois, roi_scores, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights = tf.py_func(
         proposal_target_layer,
         [rois, roi_scores, self._gt_boxes, self._num_classes],
-        [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32])
+        [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32],
+        name="proposal_target")
 
       rois.set_shape([cfg.TRAIN.BATCH_SIZE, 5])
       roi_scores.set_shape([cfg.TRAIN.BATCH_SIZE])
@@ -187,8 +187,8 @@ class Network(object):
   def _anchor_component(self):
     with tf.variable_scope('ANCHOR_' + self._tag) as scope:
       # just to get the shape right
-      height = tf.to_int32(tf.ceil(self._im_info[0, 0] / np.float32(self._feat_stride[0])))
-      width = tf.to_int32(tf.ceil(self._im_info[0, 1] / np.float32(self._feat_stride[0])))
+      height = tf.to_int32(tf.ceil(self._im_info[0] / np.float32(self._feat_stride[0])))
+      width = tf.to_int32(tf.ceil(self._im_info[1] / np.float32(self._feat_stride[0])))
       anchors, anchor_length = tf.py_func(generate_anchors_pre,
                                           [height, width,
                                            self._feat_stride, self._anchor_scales, self._anchor_ratios],
@@ -288,7 +288,7 @@ class Network(object):
     return loss
 
   def _region_proposal(self, net_conv, is_training, initializer):
-    rpn = slim.conv2d(net_conv, 512, [3, 3], trainable=is_training, weights_initializer=initializer,
+    rpn = slim.conv2d(net_conv, cfg.RPN_CHANNELS, [3, 3], trainable=is_training, weights_initializer=initializer,
                         scope="rpn_conv/3x3")
     self._act_summaries.append(rpn)
     rpn_cls_score = slim.conv2d(rpn, self._num_anchors * 2, [1, 1], trainable=is_training,
@@ -352,8 +352,8 @@ class Network(object):
 
   def create_architecture(self, mode, num_classes, tag=None,
                           anchor_scales=(8, 16, 32), anchor_ratios=(0.5, 1, 2)):
-    self._image = tf.placeholder(tf.float32, shape=[self._batch_size, None, None, 3])
-    self._im_info = tf.placeholder(tf.float32, shape=[self._batch_size, 3])
+    self._image = tf.placeholder(tf.float32, shape=[1, None, None, 3])
+    self._im_info = tf.placeholder(tf.float32, shape=[3])
     self._gt_boxes = tf.placeholder(tf.float32, shape=[None, 5])
     self._tag = tag
 

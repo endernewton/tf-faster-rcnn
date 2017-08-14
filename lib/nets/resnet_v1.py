@@ -20,7 +20,6 @@ from nets.network import Network
 from model.config import cfg
 
 def resnet_arg_scope(is_training=True,
-                     weight_decay=cfg.TRAIN.WEIGHT_DECAY,
                      batch_norm_decay=0.997,
                      batch_norm_epsilon=1e-5,
                      batch_norm_scale=True):
@@ -35,7 +34,7 @@ def resnet_arg_scope(is_training=True,
 
   with arg_scope(
       [slim.conv2d],
-      weights_regularizer=slim.l2_regularizer(weight_decay),
+      weights_regularizer=slim.l2_regularizer(cfg.TRAIN.WEIGHT_DECAY),
       weights_initializer=slim.variance_scaling_initializer(),
       trainable=is_training,
       activation_fn=tf.nn.relu,
@@ -45,8 +44,10 @@ def resnet_arg_scope(is_training=True,
       return arg_sc
 
 class resnetv1(Network):
-  def __init__(self, batch_size=1, num_layers=50):
-    Network.__init__(self, batch_size=batch_size)
+  def __init__(self, num_layers=50):
+    Network.__init__(self)
+    self._feat_stride = [16, ]
+    self._feat_compress = [1. / float(self._feat_stride[0]), ]
     self._num_layers = num_layers
     self._scope = 'resnet_v1_%d' % num_layers
     self._decide_blocks()
@@ -92,11 +93,11 @@ class resnetv1(Network):
     if cfg.RESNET.FIXED_BLOCKS > 0:
       with slim.arg_scope(resnet_arg_scope(is_training=False)):
         net_conv, _ = resnet_v1.resnet_v1(net_conv,
-                                     self._blocks[0:cfg.RESNET.FIXED_BLOCKS],
-                                     global_pool=False,
-                                     include_root_block=False,
-                                     reuse=reuse,
-                                     scope=self._scope)
+                                           self._blocks[0:cfg.RESNET.FIXED_BLOCKS],
+                                           global_pool=False,
+                                           include_root_block=False,
+                                           reuse=reuse,
+                                           scope=self._scope)
     if cfg.RESNET.FIXED_BLOCKS < 3:
       with slim.arg_scope(resnet_arg_scope(is_training=is_training)):
         net_conv, _ = resnet_v1.resnet_v1(net_conv,
@@ -127,24 +128,24 @@ class resnetv1(Network):
     # choose different blocks for different number of layers
     if self._num_layers == 50:
       self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
-                resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
-                # use stride 1 for the last conv4 layer
-                resnet_v1_block('block3', base_depth=256, num_units=6, stride=1),
-                resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
+                      resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
+                      # use stride 1 for the last conv4 layer
+                      resnet_v1_block('block3', base_depth=256, num_units=6, stride=1),
+                      resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 101:
       self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
-                resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
-                # use stride 1 for the last conv4 layer
-                resnet_v1_block('block3', base_depth=256, num_units=23, stride=1),
-                resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
+                      resnet_v1_block('block2', base_depth=128, num_units=4, stride=2),
+                      # use stride 1 for the last conv4 layer
+                      resnet_v1_block('block3', base_depth=256, num_units=23, stride=1),
+                      resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     elif self._num_layers == 152:
       self._blocks = [resnet_v1_block('block1', base_depth=64, num_units=3, stride=2),
-                resnet_v1_block('block2', base_depth=128, num_units=8, stride=2),
-                # use stride 1 for the last conv4 layer
-                resnet_v1_block('block3', base_depth=256, num_units=36, stride=1),
-                resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
+                      resnet_v1_block('block2', base_depth=128, num_units=8, stride=2),
+                      # use stride 1 for the last conv4 layer
+                      resnet_v1_block('block3', base_depth=256, num_units=36, stride=1),
+                      resnet_v1_block('block4', base_depth=512, num_units=3, stride=1)]
 
     else:
       # other numbers are not supported
