@@ -18,7 +18,6 @@ def proposal_top_layer(rpn_cls_prob, rpn_bbox_pred, im_info, _feat_stride, ancho
      For details please see the technical report
   """
   rpn_top_n = cfg.TEST.RPN_TOP_N
-  im_info = im_info[0]
 
   scores = rpn_cls_prob[:, :, :, num_anchors:]
 

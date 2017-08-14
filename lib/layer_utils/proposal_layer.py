@@ -23,7 +23,6 @@ def proposal_layer(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_stride, 
   post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
   nms_thresh = cfg[cfg_key].RPN_NMS_THRESH
 
-  im_info = im_info[0]
   # Get the scores and bounding boxes
   scores = rpn_cls_prob[:, :, :, num_anchors:]
   rpn_bbox_pred = rpn_bbox_pred.reshape((-1, 4))
