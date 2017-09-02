@@ -62,9 +62,11 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
 
   | GPU model  | Architecture |
   | ------------- | ------------- |
-  | TitanX (Maxwell/Pascal)  | sm_52  |
-  | Grid K520 (AWS g2.2xlarge)  | sm_30  |
-  | Tesla K80 (AWS p2.xlarge)   | sm_37  |
+  | TitanX (Maxwell/Pascal) | sm_52 |
+  | GTX 960M | sm_50 |
+  | GTX 1080 (Ti) | sm_61 |
+  | Grid K520 (AWS g2.2xlarge) | sm_30 |
+  | Tesla K80 (AWS p2.xlarge) | sm_37 |
 
   **Note**: You are welcome to contribute the settings on your end if you have made the code work properly on other GPUs.
 
