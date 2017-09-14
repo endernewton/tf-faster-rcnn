@@ -22,13 +22,6 @@ case ${DATASET} in
     ANCHORS="[8,16,32]"
     RATIOS="[0.5,1,2]"
     ;;
-  pascal_voc_diff)
-    TRAIN_IMDB="voc_2007_trainval"
-    TEST_IMDB="voc_2007_test_diff"
-    ITERS=70000
-    ANCHORS="[8,16,32]"
-    RATIOS="[0.5,1,2]"
-    ;;
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
