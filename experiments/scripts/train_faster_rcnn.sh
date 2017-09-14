@@ -23,6 +23,14 @@ case ${DATASET} in
     ANCHORS="[8,16,32]"
     RATIOS="[0.5,1,2]"
     ;;
+  pascal_voc_diff)
+    TRAIN_IMDB="voc_2007_trainval"
+    TEST_IMDB="voc_2007_test_diff"
+    STEPSIZE="[50000]"
+    ITERS=70000
+    ANCHORS="[8,16,32]"
+    RATIOS="[0.5,1,2]"
+    ;;
   pascal_voc_0712)
     TRAIN_IMDB="voc_2007_trainval+voc_2012_trainval"
     TEST_IMDB="voc_2007_test"
@@ -51,35 +59,35 @@ echo Logging output to "$LOG"
 
 set +x
 if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-    NET_FINAL=output/${NET}/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/${NET}_faster_rcnn_iter_${ITERS}.ckpt
+  NET_FINAL=output/${NET}/${TRAIN_IMDB}/${EXTRA_ARGS_SLUG}/${NET}_faster_rcnn_iter_${ITERS}.ckpt
 else
-    NET_FINAL=output/${NET}/${TRAIN_IMDB}/default/${NET}_faster_rcnn_iter_${ITERS}.ckpt
+  NET_FINAL=output/${NET}/${TRAIN_IMDB}/default/${NET}_faster_rcnn_iter_${ITERS}.ckpt
 fi
 set -x
 
 if [ ! -f ${NET_FINAL}.index ]; then
-    if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
-        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
-            --weight data/imagenet_weights/${NET}.ckpt \
-            --imdb ${TRAIN_IMDB} \
-            --imdbval ${TEST_IMDB} \
-            --iters ${ITERS} \
-            --cfg experiments/cfgs/${NET}.yml \
-            --tag ${EXTRA_ARGS_SLUG} \
-            --net ${NET} \
-            --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
-            TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
-    else
-        CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
-            --weight data/imagenet_weights/${NET}.ckpt \
-            --imdb ${TRAIN_IMDB} \
-            --imdbval ${TEST_IMDB} \
-            --iters ${ITERS} \
-            --cfg experiments/cfgs/${NET}.yml \
-            --net ${NET} \
-            --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
-            TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
-    fi
+  if [[ ! -z  ${EXTRA_ARGS_SLUG}  ]]; then
+    CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
+      --weight data/imagenet_weights/${NET}.ckpt \
+      --imdb ${TRAIN_IMDB} \
+      --imdbval ${TEST_IMDB} \
+      --iters ${ITERS} \
+      --cfg experiments/cfgs/${NET}.yml \
+      --tag ${EXTRA_ARGS_SLUG} \
+      --net ${NET} \
+      --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
+      TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+  else
+    CUDA_VISIBLE_DEVICES=${GPU_ID} time python ./tools/trainval_net.py \
+      --weight data/imagenet_weights/${NET}.ckpt \
+      --imdb ${TRAIN_IMDB} \
+      --imdbval ${TEST_IMDB} \
+      --iters ${ITERS} \
+      --cfg experiments/cfgs/${NET}.yml \
+      --net ${NET} \
+      --set ANCHOR_SCALES ${ANCHORS} ANCHOR_RATIOS ${RATIOS} \
+      TRAIN.STEPSIZE ${STEPSIZE} ${EXTRA_ARGS}
+  fi
 fi
 
 ./experiments/scripts/test_faster_rcnn.sh $@

@@ -24,12 +24,14 @@ from model.config import cfg
 
 
 class pascal_voc(imdb):
-  def __init__(self, image_set, year, devkit_path=None):
-    imdb.__init__(self, 'voc_' + year + '_' + image_set)
+  def __init__(self, image_set, year, use_diff=False):
+    name = 'voc_' + year + '_' + image_set
+    if use_diff:
+      name += '_diff'
+    imdb.__init__(self, name)
     self._year = year
     self._image_set = image_set
-    self._devkit_path = self._get_default_path() if devkit_path is None \
-      else devkit_path
+    self._devkit_path = self._get_default_path()
     self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
     self._classes = ('__background__',  # always index 0
                      'aeroplane', 'bicycle', 'bird', 'boat',
@@ -48,7 +50,7 @@ class pascal_voc(imdb):
     # PASCAL specific config options
     self.config = {'cleanup': True,
                    'use_salt': True,
-                   'use_diff': False,
+                   'use_diff': use_diff,
                    'matlab_eval': False,
                    'rpn_file': None}
 
@@ -241,7 +243,7 @@ class pascal_voc(imdb):
       filename = self._get_voc_results_file_template().format(cls)
       rec, prec, ap = voc_eval(
         filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
-        use_07_metric=use_07_metric)
+        use_07_metric=use_07_metric, use_diff=self.config['use_diff'])
       aps += [ap]
       print(('AP for {} = {:.4f}'.format(cls, ap)))
       with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:

@@ -22,6 +22,11 @@ for year in ['2007', '2012']:
     name = 'voc_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: pascal_voc(split, year))
 
+for year in ['2007', '2012']:
+  for split in ['train', 'val', 'trainval', 'test']:
+    name = 'voc_{}_{}_diff'.format(year, split)
+    __sets[name] = (lambda split=split, year=year: pascal_voc(split, year, use_diff=True))
+
 # Set up coco_2014_<split>
 for year in ['2014']:
   for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:
