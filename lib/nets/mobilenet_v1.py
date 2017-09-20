@@ -249,37 +249,6 @@ class mobilenetv1(Network):
       fc7 = tf.reduce_mean(fc7, axis=[1, 2])
     return fc7
 
-  def _build_network(self, is_training=True):
-    # select initializers
-    if cfg.TRAIN.TRUNCATED:
-      initializer = tf.truncated_normal_initializer(mean=0.0, stddev=0.01)
-      initializer_bbox = tf.truncated_normal_initializer(mean=0.0, stddev=0.001)
-    else:
-      initializer = tf.random_normal_initializer(mean=0.0, stddev=0.01)
-      initializer_bbox = tf.random_normal_initializer(mean=0.0, stddev=0.001)
-    
-    net_conv = self._image_to_head(is_training)
-    with tf.variable_scope(self._scope, self._scope):
-      # build the anchors for the image
-      self._anchor_component()
-      # region proposal network
-      rois = self._region_proposal(net_conv, is_training, initializer)
-      # region of interest pooling
-      if cfg.POOLING_MODE == 'crop':
-        pool5 = self._crop_pool_layer(net_conv, rois, "pool5")
-      else:
-        raise NotImplementedError
-
-    fc7 = self._head_to_tail(pool5, is_training)
-    with tf.variable_scope(self._scope, self._scope):
-      # region classification
-      cls_prob, bbox_pred = self._region_classification(fc7, is_training, 
-                                                        initializer, initializer_bbox)
-      
-    self._score_summaries.update(self._predictions)
-
-    return rois, cls_prob, bbox_pred
-
   def get_variables_to_restore(self, variables, var_keep_dic):
     variables_to_restore = []
 
