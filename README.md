@@ -27,6 +27,7 @@ Approximate *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blo
   - Train Resnet152 on COCO 2014 trainval35k and test on minival (1000k/1390k), **37.2**.
 
 **Note**:
+  - The numbers should be further improved now due to a bug fix for adding regularization loss.
   - Due to the randomness in GPU training with Tensorflow espeicially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within ~0.2%) despite the randomness.
   - **All** the numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.X AP).
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
