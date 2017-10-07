@@ -85,7 +85,7 @@ def mobilenet_v1_base(inputs,
                       min_depth=8,
                       depth_multiplier=1.0,
                       output_stride=None,
-                      reuse=False,
+                      reuse=None,
                       scope=None):
   """Mobilenet v1.
   Constructs a Mobilenet v1 network from inputs to the given final endpoint.
@@ -211,7 +211,7 @@ class mobilenetv1(Network):
     self._depth_multiplier = cfg.MOBILENET.DEPTH_MULTIPLIER
     self._scope = 'MobilenetV1'
 
-  def _image_to_head(self, is_training, reuse=False):
+  def _image_to_head(self, is_training, reuse=None):
     # Base bottleneck
     assert (0 <= cfg.MOBILENET.FIXED_LAYERS <= 12)
     net_conv = self._image
@@ -237,7 +237,7 @@ class mobilenetv1(Network):
 
     return net_conv
 
-  def _head_to_tail(self, pool5, is_training, reuse=False):
+  def _head_to_tail(self, pool5, is_training, reuse=None):
     with slim.arg_scope(mobilenet_v1_arg_scope(is_training=is_training)):
       fc7 = mobilenet_v1_base(pool5,
                               _CONV_DEFS[12:],

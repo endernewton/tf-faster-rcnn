@@ -23,7 +23,7 @@ class vgg16(Network):
     self._feat_compress = [1. / float(self._feat_stride[0]), ]
     self._scope = 'vgg_16'
 
-  def _image_to_head(self, is_training, reuse=False):
+  def _image_to_head(self, is_training, reuse=None):
     with tf.variable_scope(self._scope, self._scope, reuse=reuse):
       net = slim.repeat(self._image, 2, slim.conv2d, 64, [3, 3],
                           trainable=False, scope='conv1')
@@ -45,7 +45,7 @@ class vgg16(Network):
     
     return net
 
-  def _head_to_tail(self, pool5, is_training, reuse=False):
+  def _head_to_tail(self, pool5, is_training, reuse=None):
     with tf.variable_scope(self._scope, self._scope, reuse=reuse):
       pool5_flat = slim.flatten(pool5, scope='flatten')
       fc6 = slim.fully_connected(pool5_flat, 4096, scope='fc6')
