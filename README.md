@@ -223,7 +223,7 @@ For convenience, here is the faster RCNN citation:
         Year = {2015}
     }
 
-### Detailed numbers from COCO server
+### Detailed numbers from COCO server (Needs to be updated)
 
 All the models are trained on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models).
 
