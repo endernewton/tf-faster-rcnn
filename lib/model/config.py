@@ -25,7 +25,7 @@ __C.TRAIN.LEARNING_RATE = 0.001
 __C.TRAIN.MOMENTUM = 0.9
 
 # Weight decay, for regularization
-__C.TRAIN.WEIGHT_DECAY = 0.0005
+__C.TRAIN.WEIGHT_DECAY = 0.0001
 
 # Factor for reducing the learning rate
 __C.TRAIN.GAMMA = 0.1

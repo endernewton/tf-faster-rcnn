@@ -345,10 +345,10 @@ class Network(object):
 
     return cls_prob, bbox_pred
 
-  def _image_to_head(self, is_training, reuse=False):
+  def _image_to_head(self, is_training, reuse=None):
     raise NotImplementedError
 
-  def _head_to_tail(self, pool5, is_training, reuse=False):
+  def _head_to_tail(self, pool5, is_training, reuse=None):
     raise NotImplementedError
 
   def create_architecture(self, mode, num_classes, tag=None,

@@ -7,37 +7,37 @@ A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (x
 The current code supports **VGG16**, **Resnet V1** and **Mobilenet V1** models. We mainly tested it on plain VGG16 and Resnet101 (thank you @philokey!) architecture. As the baseline, we report numbers using a single model on a single convolution layer, so no multi-scale, no multi-stage bounding box regression, no skip-connection, no extra input is used. The only data augmentation technique is left-right flipping during training following the original Faster RCNN. All models are released.
 
 With VGG16 (``conv5_3``):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **71.2**.
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.3**.
-  - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **29.5**.
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **70.8**.
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test ([R-FCN](https://github.com/daijifeng001/R-FCN) schedule), **75.7**.
+  - Train on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) and test on [minival](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models) (900k/1190k), **30.2**.
 
 With Resnet101 (last ``conv4``):
-  - Train on VOC 2007 trainval and test on VOC 2007 test, **75.2**.
-  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.3**.
-  - Train on COCO 2014 trainval35k and test on minival (900k/1190k), **34.1**.
+  - Train on VOC 2007 trainval and test on VOC 2007 test, **75.7**.
+  - Train on VOC 2007+2012 trainval and test on VOC 2007 test (R-FCN schedule), **79.8**.
+  - Train on COCO 2014 trainval35k and test on minival (900k/1190k), **35.2**.
 
 More Results:
-  - Train Mobilenet (1.0, 224) on COCO 2014 trainval35k and test on minival (900k/1190k), **21.9**.
-  - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **31.6**.
-  - Train Resnet152 on COCO 2014 trainval35k and test on minival (900k/1190k), **35.2**.
+  - Train Mobilenet (1.0, 224) on COCO 2014 trainval35k and test on minival (900k/1190k), **21.8**.
+  - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **32.3**.
+  - Train Resnet152 on COCO 2014 trainval35k and test on minival (900k/1190k), **36.1**.
 
 Approximate *baseline* [setup](https://github.com/endernewton/tf-faster-rcnn/blob/master/experiments/cfgs/res101-lg.yml) from [FPN](https://arxiv.org/abs/1612.03144) (this repo does not contain training code for FPN yet):
-  - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **33.4**.
-  - Train Resnet101 on COCO 2014 trainval35k and test on minival (900k/1190k), **36.3**.
-  - Train Resnet152 on COCO 2014 trainval35k and test on minival (1000k/1390k), **37.2**.
+  - Train Resnet50 on COCO 2014 trainval35k and test on minival (900k/1190k), **34.2**.
+  - Train Resnet101 on COCO 2014 trainval35k and test on minival (900k/1190k), **37.4**.
+  - Train Resnet152 on COCO 2014 trainval35k and test on minival (900k/1190k), **38.2**.
 
 **Note**:
-  - The numbers should be further improved now, please stay tuned.
   - Due to the randomness in GPU training with Tensorflow especially for VOC, the best numbers are reported (with 2-3 attempts) here. According to my experience, for COCO you can almost always get a very close number (within ~0.2%) despite the randomness.
-  - **All** the numbers are obtained with a different testing scheme without selecting region proposals using non-maximal suppression (TEST.MODE top), the default and original testing scheme (TEST.MODE nms) will likely result in slightly worse performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.X AP).
+  - The numbers are obtained with the **default** testing scheme which selects region proposals using non-maximal suppression (TEST.MODE nms), the alternative testing scheme (TEST.MODE nms) will likely result in slightly better performance (see [report](https://arxiv.org/pdf/1702.02138.pdf), for COCO it drops 0.X AP).
   - Since we keep the small proposals (\< 16 pixels width/height), our performance is especially good for small objects.
   - We do not set a threshold (instead of 0.05) for a detection to be included in the final result, which increases recall.
+  - Weight decay is set to 1e-4.
   - For other minor modifications, please check the [report](https://arxiv.org/pdf/1702.02138.pdf). Notable ones include using ``crop_and_resize``, and excluding ground truth boxes in RoIs during training.
-  - For COCO, we find the performance improving with more iterations (VGG16 350k/490k: 26.9, 600k/790k: 28.3, 900k/1190k: 29.5), and potentially better performance can be achieved with even more iterations.
-  - For Resnets, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool (which I find useless especially for COCO). The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Weight decay is set to Renset101 default 1e-4. Learning rate for biases is not doubled.
+  - For COCO, we find the performance improving with more iterations, and potentially better performance can be achieved with even more iterations.
+  - For Resnets, we fix the first block (total 4) when fine-tuning the network, and only use ``crop_and_resize`` to resize the RoIs (7x7) without max-pool (which I find useless especially for COCO). The final feature maps are average-pooled for classification and regression. All batch normalization parameters are fixed. Learning rate for biases is not doubled.
   - For Mobilenets, we fix the first five layers when fine-tuning the network. All batch normalization parameters are fixed. Weight decay for Mobilenet layers is set to 4e-5.
   - For approximate [FPN](https://arxiv.org/abs/1612.03144) baseline setup we simply resize the image with 800 pixels, add 32^2 anchors, and take 1000 proposals during testing.
-  - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://xinlei.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models, including longer COCO VGG16 models and Resnet ones.
+  - Check out [here](http://ladoga.graphics.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](http://xinlei.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/)/[here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ) for the latest models **Needs to be updated**, including longer COCO VGG16 models and Resnet ones.
 
 ### Additional features
 Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.02138.pdf) are added to make research life easier:
