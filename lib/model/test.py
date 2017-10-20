@@ -124,7 +124,7 @@ def apply_nms(all_boxes, thresh):
       x2 = dets[:, 2]
       y2 = dets[:, 3]
       scores = dets[:, 4]
-      inds = np.where((x2 > x1) & (y2 > y1) & (scores > cfg.TEST.DET_THRESHOLD))[0]
+      inds = np.where((x2 > x1) & (y2 > y1))[0]
       dets = dets[inds,:]
       if dets == []:
         continue
