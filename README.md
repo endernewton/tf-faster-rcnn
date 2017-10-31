@@ -216,6 +216,15 @@ If you find this implementation or the analysis conducted in our report helpful,
         Journal = {arXiv preprint arXiv:1702.02138},
         Year = {2017}
     }
+    
+Or for a formal paper, [Spatial Memory Network](https://arxiv.org/abs/1704.04224):
+
+    @article{chen2017spatial,
+      title={Spatial Memory for Context Reasoning in Object Detection},
+      author={Chen, Xinlei and Gupta, Abhinav},
+      journal={arXiv preprint arXiv:1704.04224},
+      year={2017}
+    }
 
 For convenience, here is the faster RCNN citation:
 
@@ -226,39 +235,3 @@ For convenience, here is the faster RCNN citation:
         Booktitle = {Advances in Neural Information Processing Systems ({NIPS})},
         Year = {2015}
     }
-
-### Detailed numbers from COCO server (Needs to be updated)
-
-All the models are trained on COCO 2014 [trainval35k](https://github.com/rbgirshick/py-faster-rcnn/tree/master/models).
-
-VGG16 COCO 2015 test-dev (900k/1190k):
-```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.297
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.504
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.128
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.325
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.421
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.272
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.399
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.187
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.451
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.591
- ```
-
-VGG16 COCO 2015 test-std (900k/1190k):
- ```
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.295
- Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.501
- Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.312
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.119
- Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.327
- Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.418
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.273
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.400
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.179
- Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.455
- Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.586
- ```
