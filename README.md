@@ -75,7 +75,7 @@ Additional features not mentioned in the [report](https://arxiv.org/pdf/1702.021
   | Grid K520 (AWS g2.2xlarge) | sm_30 |
   | Tesla K80 (AWS p2.xlarge) | sm_37 |
 
-  **Note**: You are welcome to contribute the settings on your end if you have made the code work properly on other GPUs.
+  **Note**: You are welcome to contribute the settings on your end if you have made the code work properly on other GPUs. Also even if you are only using CPU tensorflow, GPU based code (for NMS) will be used by default, so please set **USE_GPU_NMS False** to get the correct output.
 
 
 3. Build the Cython modules
