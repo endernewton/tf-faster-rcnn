@@ -135,9 +135,13 @@ class Sample_IMG():
 
             box = self.assignBox(char_width, char_height)
             if box is None:
-                x = random.randrange(self.width - char_width)
-                y = random.randrange(self.height - char_height)
+                x = random.randrange(self.width - char_width - 1)
+                y = random.randrange(self.height - char_height - 1)
                 box = (x, y, x + char_width, y + char_height)
+
+            # skip invalid placement
+            if box[2] >= self.width or box[3] >= self.height:
+                continue
 
             self.boxes.append(box)
 
