@@ -295,7 +295,7 @@ class fontdataset(imdb):
                 continue
             # filename = self._get_voc_results_file_template().format(cls)
             filename = os.path.join(self._devkit_path, str(i) + '.txt')
-            rec, prec, ap = phd08_eval(
+            rec, prec, ap = fontdataset_eval(
                 filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
