@@ -43,7 +43,6 @@ for year in ['2015']:
 # FONT dataset
 for split in ['train', 'val', 'trainval', 'test']:
     name = 'fontdataset_{}'.format(split)
-    print name
     __sets[name] = (lambda split=split:
             datasets.fontdataset.fontdataset(split))
 

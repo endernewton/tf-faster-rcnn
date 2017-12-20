@@ -19,7 +19,7 @@ import cPickle
 import subprocess
 import uuid
 from fontdataset_eval import fontdataset_eval
-from fast_rcnn.config import cfg
+from model.config import cfg
 import io
 import pdb
 
