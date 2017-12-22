@@ -36,7 +36,8 @@ from PIL import Image, ImageFont, ImageDraw
 
 NETS = {'vgg16': ('vgg16_faster_rcnn_iter_70000.ckpt',),'res101': ('res101_faster_rcnn_iter_110000.ckpt',)}
 DATASETS= {
-    'fontdataset': ('fontdataset_test',),
+    'fontdataset': ('fontdataset_trainval',),
+    'fontdataset_test': ('fontdataset_test',),
     'pascal_voc': ('voc_2007_trainval',),
     'pascal_voc_0712': ('voc_2007_trainval+voc_2012_trainval',)
 }
@@ -163,7 +164,7 @@ if __name__ == '__main__':
     # im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
     #             '001763.jpg', '004545.jpg']
 
-    im_names = [str(x) + '.jpg' for x in range(50)]
+    im_names = [str(x) + '.png' for x in range(50)]
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
