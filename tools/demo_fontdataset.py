@@ -74,11 +74,12 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
 
     del draw
 
-def demo(sess, net, image_name, imdb):
+def demo(sess, net, image_name, imdb, testimg):
     """Detect object classes in an image using pre-computed object proposals."""
 
     # Load the demo image
-    im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
+    # im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
+    im_file = os.path.join(testimg, image_name)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -104,7 +105,7 @@ def demo(sess, net, image_name, imdb):
         dets = dets[keep, :]
         vis_detections(pil_im, cls, dets, thresh=CONF_THRESH)
 
-    result_file = os.path.join(cfg.DATA_DIR, 'demo', 'result', image_name.split('.')[0] + '_result.jpg')
+    result_file = os.path.join(testimg, 'result', image_name.split('.')[0] + '_result.jpg')
     pil_im.save(result_file)
 
 def parse_args():
@@ -169,6 +170,6 @@ if __name__ == '__main__':
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print('Demo for data/demo/{}'.format(im_name))
-        demo(sess, net, im_name, imdb)
+        demo(sess, net, im_name, imdb, testimg)
 
     # plt.show()
