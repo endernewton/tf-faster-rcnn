@@ -49,7 +49,8 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
         return
 
     draw = ImageDraw.Draw(pil_im)
-    font = ImageFont.truetype(os.path.join(cfg.DATA_DIR, 'arialuni.ttf'), 14)
+    #font = ImageFont.truetype(os.path.join(cfg.DATA_DIR, 'Ubuntu.ttf'), 14)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/nanum/NanumGothic_Coding.ttf', 14)
     for i in inds:
         bbox = dets[i, :4]
         score = dets[i, -1]
@@ -80,6 +81,7 @@ def demo(sess, net, image_name, imdb, testimg):
     # Load the demo image
     # im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
     im_file = os.path.join(testimg, image_name)
+    print(im_file)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -133,6 +135,7 @@ if __name__ == '__main__':
     tfmodel = args.model
 
     testimg = args.testimg
+    print(testimg)
 
     if not os.path.isfile(tfmodel + '.meta'):
         raise IOError(('{:s} not found.\nDid you download the proper networks from '
@@ -165,11 +168,12 @@ if __name__ == '__main__':
     # im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
     #             '001763.jpg', '004545.jpg']
 
-    im_names = [str(x) + '.png' for x in range(50)]
+    #im_names = [str(x) + '.png' for x in range(50)]
+    im_names = [str(x) + '.png' for x in range(8000)]
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('Demo for data/demo/{}'.format(im_name))
+        print('Demo for {}/{}'.format(testimg, im_name))
         demo(sess, net, im_name, imdb, testimg)
 
     # plt.show()
