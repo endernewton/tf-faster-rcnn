@@ -115,6 +115,8 @@ def parse_args():
                         choices=DATASETS.keys(), default='pascal_voc_0712')
     parser.add_argument('--testimg', dest='testimg', help='Testing images: foler names',
                         default='demo')
+    parser.add_argument('--model', dest='model', help='Trained model file name',
+                        default=' ')
     args = parser.parse_args()
 
     return args
@@ -126,8 +128,7 @@ if __name__ == '__main__':
     # model path
     demonet = args.demo_net
     dataset = args.dataset
-    tfmodel = os.path.join('output', demonet, DATASETS[dataset][0], 'default',
-                              NETS[demonet][0])
+    tfmodel = args.model
 
     testimg = args.testimg
 
