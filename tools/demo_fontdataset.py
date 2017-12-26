@@ -61,7 +61,7 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
         draw.text((int(bbox[0]) - 2, int(bbox[1]) - 15),
                   # '{:s} {:.3f}'.format(str(class_name.encode('utf-8')), score),
                   # class_name + u' ' + unicode(str(score)),
-                  class_name + u' ' + '{:.3f}'.format(unicode(str(score))),
+                  class_name + u' ' + '{:.2f}'.format(unicode(str(score))),
                   font=font,
                   fill=(0, 0, 255),
                   encoding='utf-8'
