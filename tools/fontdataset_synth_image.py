@@ -270,7 +270,7 @@ class CH_Dataset():
                          + [x for x in (ascii_lowercase + ascii_uppercase)] + [str(x) for x in range(10)] + [x for x in
                                                                                                              '~!@#$%^&*()_+-=<>?,.;:[]{}|']
 
-        self.char_list = self.char_list[:100]
+        self.char_list = self.char_list[:1000]
         self.font_list = [join(font_path, f) for f in listdir(font_path) if
                           isfile(join(font_path, f)) and f.find('.DS_Store') == -1]
 
