@@ -60,7 +60,8 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
                        )
         draw.text((int(bbox[0]) - 2, int(bbox[1]) - 15),
                   # '{:s} {:.3f}'.format(str(class_name.encode('utf-8')), score),
-                  class_name + u' ' + unicode(str(score)),
+                  # class_name + u' ' + unicode(str(score)),
+                  class_name + u' ' + '{:.3f}'.format(unicode(str(score))),
                   font=font,
                   fill=(0, 0, 255),
                   encoding='utf-8'
@@ -80,6 +81,8 @@ def demo(sess, net, image_name, imdb, testimg):
     # Load the demo image
     # im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
     im_file = os.path.join(testimg, image_name)
+
+    print(im_file)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -169,7 +172,7 @@ if __name__ == '__main__':
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('Demo for data/demo/{}'.format(im_name))
+        print('Demo for {}/{}'.format(testimg, im_name))
         demo(sess, net, im_name, imdb, testimg)
 
     # plt.show()
