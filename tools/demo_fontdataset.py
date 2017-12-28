@@ -118,6 +118,8 @@ def parse_args():
                         choices=NETS.keys(), default='res101')
     parser.add_argument('--dataset', dest='dataset', help='Trained dataset [pascal_voc pascal_voc_0712]',
                         choices=DATASETS.keys(), default='pascal_voc_0712')
+    parser.add_argument('--index', dest='index', help='Index list file name',
+                        default=' ')
     parser.add_argument('--testimg', dest='testimg', help='Testing images: foler names',
                         default='demo')
     parser.add_argument('--model', dest='model', help='Trained model file name',
@@ -134,6 +136,7 @@ if __name__ == '__main__':
     demonet = args.demo_net
     dataset = args.dataset
     tfmodel = args.model
+    index_file = args.index
 
     testimg = args.testimg
     print(testimg)
@@ -170,7 +173,11 @@ if __name__ == '__main__':
     #             '001763.jpg', '004545.jpg']
 
     #im_names = [str(x) + '.png' for x in range(50)]
-    im_names = [str(x) + '.png' for x in range(8000)]
+    # im_names = [str(x) + '.png' for x in range(8000)]
+
+    with open(index_file, 'r') as f:
+        lines = f.readlines()
+        im_names = [x.strip() for x in lines]
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
