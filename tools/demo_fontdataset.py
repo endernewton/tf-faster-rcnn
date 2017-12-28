@@ -48,6 +48,8 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
     if len(inds) == 0:
         return
 
+
+    boxes = list()
     draw = ImageDraw.Draw(pil_im)
     #font = ImageFont.truetype(os.path.join(cfg.DATA_DIR, 'Ubuntu.ttf'), 14)
     font = ImageFont.truetype('/usr/share/fonts/truetype/nanum/NanumGothic_Coding.ttf', 14)
@@ -67,14 +69,14 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
                   fill=(0, 0, 255),
                   encoding='utf-8'
                   )
-        # cv2.rectangle(im, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color=(255,0,0), thickness=4)
-        # cv2.putText(img=im,
-        #             text='{:s} {:.3f}'.format(str(class_name.encode('utf-8')), score),
-        #             org=(int(bbox[0]), int(bbox[1])),
-        #             fontScale=14,
-        #             color=(255,0,0))
+
+        boxes.append([
+            int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]), score, class_name
+        ])
 
     del draw
+
+    return boxes
 
 def demo(sess, net, image_name, imdb, testimg):
     """Detect object classes in an image using pre-computed object proposals."""
@@ -98,6 +100,9 @@ def demo(sess, net, image_name, imdb, testimg):
     # Visualize detections for each class
     CONF_THRESH = 0.8
     NMS_THRESH = 0.3
+
+    found_boxes = list()
+
     for cls_ind, cls in enumerate(CLASSES[1:]):
         cls_ind += 1 # because we skipped background
         cls_boxes = boxes[:, 4*cls_ind:4*(cls_ind + 1)]
@@ -106,10 +111,12 @@ def demo(sess, net, image_name, imdb, testimg):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(pil_im, cls, dets, thresh=CONF_THRESH)
+        found_boxes += vis_detections(pil_im, cls, dets, thresh=CONF_THRESH)
 
     result_file = os.path.join(testimg, 'result', image_name.split('.')[0] + '_result.jpg')
     pil_im.save(result_file)
+
+    print(found_boxes)
 
 def parse_args():
     """Parse input arguments."""
