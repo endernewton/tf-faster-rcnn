@@ -27,6 +27,8 @@ import numpy as np
 import os, cv2
 import argparse
 
+import xml.etree.ElementTree as ET
+
 from nets.vgg16 import vgg16
 from nets.resnet_v1 import resnetv1
 
@@ -41,6 +43,29 @@ DATASETS= {
     'pascal_voc': ('voc_2007_trainval',),
     'pascal_voc_0712': ('voc_2007_trainval+voc_2012_trainval',)
 }
+
+def parse_rec(filename):
+    """ Parse a PASCAL VOC xml file """
+    tree = ET.parse(filename)
+    objects = []
+    for obj in tree.findall('object'):
+        obj_struct = {}
+        obj_struct['name'] = obj.find('name').text
+        # obj_struct['pose'] = obj.find('pose').text
+        # obj_struct['truncated'] = int(obj.find('truncated').text)
+        # obj_struct['difficult'] = int(obj.find('difficult').text)
+        obj_struct['pose'] = ''
+        obj_struct['truncated'] = 0
+        obj_struct['difficult'] = 0
+        bbox = obj.find('bndbox')
+        obj_struct['bbox'] = [int(bbox.find('xmin').text),
+                              int(bbox.find('ymin').text),
+                              int(bbox.find('xmax').text),
+                              int(bbox.find('ymax').text)]
+        objects.append(obj_struct)
+
+    return objects
+
 
 def vis_detections(pil_im, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
@@ -78,13 +103,24 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
 
     return boxes
 
+
+def compare_founding(found_boxes, answer):
+    '''
+
+    :param found_boxes:
+    :param answer:
+    :return:
+    '''
+    pass
+
 def demo(sess, net, image_name, imdb, testimg):
     """Detect object classes in an image using pre-computed object proposals."""
 
     # Load the demo image
     # im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
-    im_file = os.path.join(testimg, image_name)
-    print(im_file)
+    im_file = os.path.join(testimg, 'images', image_name)
+    anno_file = os.path.join(testimg, 'annotations', image_name.split('.')[0], '.xml')
+    print(im_file, anno_file)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -117,6 +153,9 @@ def demo(sess, net, image_name, imdb, testimg):
     pil_im.save(result_file)
 
     print(found_boxes)
+
+    answer = parse_rec(anno_file)
+    compare_founding(found_boxes, answer)
 
 def parse_args():
     """Parse input arguments."""
