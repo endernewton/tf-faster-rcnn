@@ -49,30 +49,21 @@ def parse_rec(filename):
     tree = ET.parse(filename)
     objects = []
     for obj in tree.findall('object'):
-        obj_struct = {}
+        obj_struct = dict()
         obj_struct['name'] = obj.find('name').text
-        # obj_struct['pose'] = obj.find('pose').text
-        # obj_struct['truncated'] = int(obj.find('truncated').text)
-        # obj_struct['difficult'] = int(obj.find('difficult').text)
-        obj_struct['pose'] = ''
-        obj_struct['truncated'] = 0
-        obj_struct['difficult'] = 0
         bbox = obj.find('bndbox')
         obj_struct['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),
                               int(bbox.find('xmax').text),
                               int(bbox.find('ymax').text)]
         objects.append(obj_struct)
-
     return objects
-
 
 def vis_detections(pil_im, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
         return list()
-
 
     boxes = list()
     draw = ImageDraw.Draw(pil_im)
@@ -94,24 +85,71 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
                   fill=(0, 0, 255),
                   encoding='utf-8'
                   )
-
         boxes.append([
             int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]), score, class_name
         ])
 
     del draw
-
     return boxes
 
-
-def compare_founding(found_boxes, answer):
+def compare_founding(found_boxes, answer, ovthresh=0.5):
     '''
 
     :param found_boxes:
     :param answer:
     :return:
     '''
-    pass
+    answer_fontsize = [np.maximum(ans['bbox'][2] - ans['bbox'][0], ans['bbox'][3] - ans['bbox'][1]) for ans in answer]
+
+    num_answer = len(answer)
+    num_matching = 0
+
+    char_count = dict()
+    fontsize_count = dict()
+
+    bbox = np.array([x['bbox'] for x in answer])
+
+    for found in found_boxes:
+        ovmax = -np.inf
+        BBGT = bbox.astype(float)
+
+        if BBGT.size > 0:
+            # compute overlaps
+            # intersection
+            ixmin = np.maximum(BBGT[:, 0], found[0])
+            iymin = np.maximum(BBGT[:, 1], found[1])
+            ixmax = np.minimum(BBGT[:, 2], found[2])
+            iymax = np.minimum(BBGT[:, 3], found[3])
+            iw = np.maximum(ixmax - ixmin + 1., 0.)
+            ih = np.maximum(iymax - iymin + 1., 0.)
+            inters = iw * ih
+
+            # union
+            uni = ((found[2] - found[0] + 1.) * (found[3] - found[1] + 1.) +
+                   (BBGT[:, 2] - BBGT[:, 0] + 1.) *
+                   (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
+
+            overlaps = inters / uni
+            ovmax = np.max(overlaps)
+            jmax = np.argmax(overlaps)
+
+        if ovmax > ovthresh:
+            fontsize = answer_fontsize[jmax]
+            label = answer[jmax]['name']
+            if label == found[5]:
+                if label not in char_count:
+                    char_count[label] = 0
+                else:
+                    char_count[label] += 1
+                if fontsize not in fontsize_count:
+                    fontsize_count[fontsize] = 0
+                else:
+                    fontsize_count[fontsize] += 1
+                num_matching += 1
+
+    print(num_answer, num_matching)
+    print(fontsize_count)
+    print(char_count)
 
 def demo(sess, net, image_name, imdb, testimg):
     """Detect object classes in an image using pre-computed object proposals."""
