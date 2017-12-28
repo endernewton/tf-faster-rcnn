@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
     with open(index_file, 'r') as f:
         lines = f.readlines()
-        im_names = [x.strip() for x in lines]
+        im_names = [x.strip() + '.png' for x in lines]
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
