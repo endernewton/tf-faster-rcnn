@@ -46,7 +46,7 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
-        return
+        return list()
 
 
     boxes = list()
