@@ -95,7 +95,7 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
 
 def calc_fontsize(bbox):
     size_remap = {0: 0, 10: 10, 20: 20, 30: 30, 40: 50, 50: 50, 60: 50, 80: 100, 90: 100, 100: 100, 110: 100, 120: 100}
-    fontsize = np.maximum(bbox[2] - bbox, bbox - bbox)
+    fontsize = np.maximum(bbox[2] - bbox[0], bbox[3] - bbox[1])
     return size_remap[int(fontsize / 10) * 10]
 
 def compare_founding(found_boxes, answer, ovthresh=0.5):
@@ -326,7 +326,7 @@ if __name__ == '__main__':
     num_answer_fontsize_sum = dict()
     num_answer_char_sum = dict()
 
-    for im_name in im_names:
+    for idx, im_name in enumerate(im_names):
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print('Demo for {}/{}'.format(testimg, im_name))
         num_matching, num_answer, num_non_matching, fontsize_count, char_count, num_answer_fontsize, num_answer_char, char_non_matching_count, fontsize_non_matching_count = demo(sess, net, im_name, imdb, testimg)
@@ -342,6 +342,7 @@ if __name__ == '__main__':
 
         merge_dict(num_answer_fontsize_sum, num_answer_fontsize)
         merge_dict(num_answer_char_sum, num_answer_char)
+        #if idx == 3: break
 
     recall = num_matching_sum / float(num_answer_sum)
     precision = num_matching_sum / float(num_matching_sum + num_non_matching_sum)
