@@ -27,8 +27,7 @@ import numpy as np
 import os, cv2
 import argparse
 
-import json
-
+from copy import deepcopy
 import xml.etree.ElementTree as ET
 
 from nets.vgg16 import vgg16
@@ -94,6 +93,11 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
     del draw
     return boxes
 
+def calc_fontsize(bbox):
+    size_remap = {0: 0, 10: 10, 20: 20, 30: 30, 40: 50, 50: 50, 60: 50, 80: 100, 90: 100, 100: 100, 110: 100, 120: 100}
+    fontsize = np.maximum(bbox[2] - bbox, bbox - bbox)
+    return size_remap[int(fontsize / 10) * 10]
+
 def compare_founding(found_boxes, answer, ovthresh=0.5):
     '''
 
@@ -101,13 +105,11 @@ def compare_founding(found_boxes, answer, ovthresh=0.5):
     :param answer:
     :return:
     '''
-    answer_fontsize = [np.maximum(ans['bbox'][2] - ans['bbox'][0], ans['bbox'][3] - ans['bbox'][1]) for ans in answer]
-    answer_fontsize = [int(fontsize / 10) * 10 for fontsize in answer_fontsize]
-    size_remap = {0:0, 10:10, 20:20, 30:30, 40:50, 50:50, 60:50, 80:100, 90:100, 100:100, 110:100, 120:100}
-    answer_fontsize = [size_remap[fontsize] for fontsize in answer_fontsize]
+    answer_fontsize = [calc_fontsize(ans['bbox']) for ans in answer]
 
     num_answer = len(answer)
     num_matching = 0
+    num_non_matching = 0
 
     num_answer_fontsize = dict()
     num_answer_char = dict()
@@ -124,6 +126,8 @@ def compare_founding(found_boxes, answer, ovthresh=0.5):
 
     char_count = dict()
     fontsize_count = dict()
+    char_non_matching_count = dict()
+    fontsize_non_matching_count = dict()
 
     bbox = np.array([x['bbox'] for x in answer])
 
@@ -164,8 +168,30 @@ def compare_founding(found_boxes, answer, ovthresh=0.5):
                 else:
                     fontsize_count[fontsize] += 1
                 num_matching += 1
+            else:
+                if found[5] not in char_non_matching_count:
+                    char_non_matching_count[found[5]] = 1
+                else:
+                    char_non_matching_count[found[5]] += 1
+                fontsize = calc_fontsize(found)
+                if fontsize not in fontsize_non_matching_count:
+                    fontsize_non_matching_count[fontsize] = 1
+                else:
+                    fontsize_non_matching_count[fontsize] += 1
+                num_non_matching += 1
+        else:
+            if found[5] not in char_non_matching_count:
+                char_non_matching_count[found[5]] = 1
+            else:
+                char_non_matching_count[found[5]] += 1
+            fontsize = calc_fontsize(found)
+            if fontsize not in fontsize_non_matching_count:
+                fontsize_non_matching_count[fontsize] = 1
+            else:
+                fontsize_non_matching_count[fontsize] += 1
+            num_non_matching += 1
 
-    return num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char
+    return num_matching, num_answer, num_non_matching, fontsize_count, char_count, num_answer_fontsize, num_answer_char, char_non_matching_count, fontsize_non_matching_count
 
 
 
@@ -209,8 +235,8 @@ def demo(sess, net, image_name, imdb, testimg):
     pil_im.save(result_file)
 
     answer = parse_rec(anno_file)
-    num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char = compare_founding(found_boxes, answer)
-    return num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char
+    num_matching, num_answer, num_non_matching, fontsize_count, char_count, num_answer_fontsize, num_answer_char, char_non_matching_count, fontsize_non_matching_count = compare_founding(found_boxes, answer)
+    return num_matching, num_answer, num_non_matching, fontsize_count, char_count, num_answer_fontsize, num_answer_char, char_non_matching_count, fontsize_non_matching_count
 
 def parse_args():
     """Parse input arguments."""
@@ -235,7 +261,6 @@ def merge_dict(a, b):
             a[k] += v
         else:
             a[k] = v
-            
     return a
 
 if __name__ == '__main__':
@@ -291,50 +316,76 @@ if __name__ == '__main__':
 
     num_matching_sum = 0
     num_answer_sum = 0
+    num_non_matching_sum = 0
     fontsize_count_sum = dict()
     char_count_sum = dict()
+
+    fontsize_non_matching_count_sum = dict()
+    char_count_non_matching_sum = dict()
+
     num_answer_fontsize_sum = dict()
     num_answer_char_sum = dict()
 
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print('Demo for {}/{}'.format(testimg, im_name))
-        num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char = demo(sess, net, im_name, imdb, testimg)
+        num_matching, num_answer, num_non_matching, fontsize_count, char_count, num_answer_fontsize, num_answer_char, char_non_matching_count, fontsize_non_matching_count = demo(sess, net, im_name, imdb, testimg)
 
         num_matching_sum += num_matching
         num_answer_sum += num_answer
+        num_non_matching_sum += num_non_matching
         merge_dict(fontsize_count_sum, fontsize_count)
         merge_dict(char_count_sum, char_count)
+
+        merge_dict(fontsize_non_matching_count_sum, fontsize_non_matching_count)
+        merge_dict(char_count_non_matching_sum, char_non_matching_count)
+
         merge_dict(num_answer_fontsize_sum, num_answer_fontsize)
         merge_dict(num_answer_char_sum, num_answer_char)
 
+    recall = num_matching_sum / float(num_answer_sum)
+    precision = num_matching_sum / float(num_matching_sum + num_non_matching_sum)
+    print(num_matching_sum, num_answer_sum, 'recall', recall, 'precision', precision)
+    print(sum(fontsize_count_sum.values()), sum(char_count_sum.values()), sum(num_answer_fontsize_sum.values()), sum(num_answer_char_sum.values()))
 
-    precision = num_matching_sum / float(num_answer_sum)
-    print(num_matching_sum, num_answer_sum, 'precision', precision)
-    print(sum(fontsize_count_sum.values()), sum(char_count_sum.values()), sum(num_answer_fontsize_sum.values()), sum(num_answer_char_sum.values())) 
-    '''print(sum(fontsize_count_sum.values()), sum(char_count_sum.values()), sum(num_answer_fontsize_sum.values()), sum(num_answer_char_sum.values())) 
-    print(json.dumps(fontsize_count_sum, ensure_ascii=False))
-    print(json.dumps(char_count_sum, ensure_ascii=False))
-    print(json.dumps(num_answer_fontsize_sum, ensure_ascii=False))
-    print(json.dumps(num_answer_char_sum, ensure_ascii=False))
-    '''
+    # calculate positive + negative prediction: to calculate precision
+    fontsize_count_pos_neg_sum = deepcopy(fontsize_count_sum)
+    char_count_pos_neg_sum = deepcopy(char_count_sum)
+    merge_dict(fontsize_count_pos_neg_sum, fontsize_non_matching_count_sum)
+    merge_dict(char_count_pos_neg_sum, char_count_non_matching_sum)
 
-    print('char, precision')
+    merge_dict(fontsize_non_matching_count_sum, fontsize_non_matching_count)
+    merge_dict(char_count_non_matching_sum, char_non_matching_count)
+
+    print('char, recall')
     for char, count in num_answer_char_sum.items():
         if char in char_count_sum:
-            precision = float(char_count_sum[char]) / float(count)
+            recall = float(char_count_sum[char]) / float(count)
         else:
-            precision = 0
-        try:
-            print(char, precision)
-        except:
-            print(char.encode('utf-8').strip(), precision)
+            recall = 0
+        print(char.encode('utf-8').strip(), recall)
 
-    print('fontsize, precision')
+    print('char, precision')
+    for char, count in char_count_pos_neg_sum.items():
+        if char in char_count_sum:
+            recall = float(char_count_sum[char]) / float(count)
+        else:
+            recall = 0
+        print(char.encode('utf-8').strip(), recall)
+
+    print('fontsize, recall')
     for fontsize, count in num_answer_fontsize_sum.items():
         if fontsize in fontsize_count_sum:
-            precision = float(fontsize_count_sum[fontsize]) / float(count)
+            recall = float(fontsize_count_sum[fontsize]) / float(count)
         else:
-            precision = 0
-        print(fontsize, precision)
+            recall = 0
+        print(fontsize, recall)
+
+    print('fontsize, precision')
+    for fontsize, count in fontsize_count_pos_neg_sum.items():
+        if fontsize in fontsize_count_sum:
+            recall = float(fontsize_count_sum[fontsize]) / float(count)
+        else:
+            recall = 0
+        print(fontsize, recall)
 
