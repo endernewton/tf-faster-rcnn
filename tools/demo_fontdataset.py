@@ -27,6 +27,8 @@ import numpy as np
 import os, cv2
 import argparse
 
+import json
+
 import xml.etree.ElementTree as ET
 
 from nets.vgg16 import vgg16
@@ -100,9 +102,25 @@ def compare_founding(found_boxes, answer, ovthresh=0.5):
     :return:
     '''
     answer_fontsize = [np.maximum(ans['bbox'][2] - ans['bbox'][0], ans['bbox'][3] - ans['bbox'][1]) for ans in answer]
+    answer_fontsize = [int(fontsize / 10) * 10 for fontsize in answer_fontsize]
+    size_remap = {0:0, 10:10, 20:20, 30:30, 40:50, 50:50, 60:50, 80:100, 90:100, 100:100, 110:100, 120:100}
+    answer_fontsize = [size_remap[fontsize] for fontsize in answer_fontsize]
 
     num_answer = len(answer)
     num_matching = 0
+
+    num_answer_fontsize = dict()
+    num_answer_char = dict()
+
+    for fontsize, ans in zip(answer_fontsize, answer):
+        if ans['name'] not in num_answer_char:
+            num_answer_char[ans['name']] = 1
+        else:
+            num_answer_char[ans['name']] += 1
+        if fontsize not in num_answer_fontsize:
+            num_answer_fontsize[fontsize] = 1
+        else:
+            num_answer_fontsize[fontsize] += 1
 
     char_count = dict()
     fontsize_count = dict()
@@ -138,18 +156,18 @@ def compare_founding(found_boxes, answer, ovthresh=0.5):
             label = answer[jmax]['name']
             if label == found[5]:
                 if label not in char_count:
-                    char_count[label] = 0
+                    char_count[label] = 1
                 else:
                     char_count[label] += 1
                 if fontsize not in fontsize_count:
-                    fontsize_count[fontsize] = 0
+                    fontsize_count[fontsize] = 1
                 else:
                     fontsize_count[fontsize] += 1
                 num_matching += 1
 
-    print(num_answer, num_matching)
-    print(fontsize_count)
-    print(char_count)
+    return num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char
+
+
 
 def demo(sess, net, image_name, imdb, testimg):
     """Detect object classes in an image using pre-computed object proposals."""
@@ -157,7 +175,7 @@ def demo(sess, net, image_name, imdb, testimg):
     # Load the demo image
     # im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
     im_file = os.path.join(testimg, 'images', image_name)
-    anno_file = os.path.join(testimg, 'annotations', image_name.split('.')[0], '.xml')
+    anno_file = os.path.join(testimg, 'annotations', image_name.split('.')[0] + '.xml')
     print(im_file, anno_file)
     im = cv2.imread(im_file)
 
@@ -190,10 +208,9 @@ def demo(sess, net, image_name, imdb, testimg):
     result_file = os.path.join(testimg, 'result', image_name.split('.')[0] + '_result.jpg')
     pil_im.save(result_file)
 
-    print(found_boxes)
-
     answer = parse_rec(anno_file)
-    compare_founding(found_boxes, answer)
+    num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char = compare_founding(found_boxes, answer)
+    return num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char
 
 def parse_args():
     """Parse input arguments."""
@@ -211,6 +228,15 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+def merge_dict(a, b):
+    for k, v in b.items():
+        if k in a:
+            a[k] += v
+        else:
+            a[k] = v
+            
+    return a
 
 if __name__ == '__main__':
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
@@ -263,9 +289,52 @@ if __name__ == '__main__':
         lines = f.readlines()
         im_names = [x.strip() + '.png' for x in lines]
 
+    num_matching_sum = 0
+    num_answer_sum = 0
+    fontsize_count_sum = dict()
+    char_count_sum = dict()
+    num_answer_fontsize_sum = dict()
+    num_answer_char_sum = dict()
+
     for im_name in im_names:
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print('Demo for {}/{}'.format(testimg, im_name))
-        demo(sess, net, im_name, imdb, testimg)
+        num_matching, num_answer, fontsize_count, char_count, num_answer_fontsize, num_answer_char = demo(sess, net, im_name, imdb, testimg)
 
-    # plt.show()
+        num_matching_sum += num_matching
+        num_answer_sum += num_answer
+        merge_dict(fontsize_count_sum, fontsize_count)
+        merge_dict(char_count_sum, char_count)
+        merge_dict(num_answer_fontsize_sum, num_answer_fontsize)
+        merge_dict(num_answer_char_sum, num_answer_char)
+
+
+    precision = num_matching_sum / float(num_answer_sum)
+    print(num_matching_sum, num_answer_sum, 'precision', precision)
+    print(sum(fontsize_count_sum.values()), sum(char_count_sum.values()), sum(num_answer_fontsize_sum.values()), sum(num_answer_char_sum.values())) 
+    '''print(sum(fontsize_count_sum.values()), sum(char_count_sum.values()), sum(num_answer_fontsize_sum.values()), sum(num_answer_char_sum.values())) 
+    print(json.dumps(fontsize_count_sum, ensure_ascii=False))
+    print(json.dumps(char_count_sum, ensure_ascii=False))
+    print(json.dumps(num_answer_fontsize_sum, ensure_ascii=False))
+    print(json.dumps(num_answer_char_sum, ensure_ascii=False))
+    '''
+
+    print('char, precision')
+    for char, count in num_answer_char_sum.items():
+        if char in char_count_sum:
+            precision = float(char_count_sum[char]) / float(count)
+        else:
+            precision = 0
+        try:
+            print(char, precision)
+        except:
+            print(char.encode('utf-8').strip(), precision)
+
+    print('fontsize, precision')
+    for fontsize, count in num_answer_fontsize_sum.items():
+        if fontsize in fontsize_count_sum:
+            precision = float(fontsize_count_sum[fontsize]) / float(count)
+        else:
+            precision = 0
+        print(fontsize, precision)
+
