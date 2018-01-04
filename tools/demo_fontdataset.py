@@ -235,6 +235,7 @@ def demo(sess, net, image_name, imdb, testimg):
         found_boxes += vis_detections(pil_im, cls, dets, thresh=CONF_THRESH)
 
     result_file = os.path.join(testimg, 'result', image_name.split('.')[0] + '_result.jpg')
+    os.makedirs(result_file)
     pil_im.save(result_file)
 
     answer = parse_rec(anno_file)
