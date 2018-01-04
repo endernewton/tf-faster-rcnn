@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 # Generate image with random string & font & size
 1. select font
@@ -19,7 +21,7 @@ import copy
 from string import ascii_lowercase, ascii_uppercase
 from os import listdir, path, makedirs
 from os.path import isfile, isdir, join, basename, exists
-
+import shutil
 import os
 import math
 begin = 0xac00
@@ -135,13 +137,9 @@ class Sample_IMG():
 
             box = self.assignBox(char_width, char_height)
             if box is None:
-                x = random.randrange(self.width - char_width - 1)
-                y = random.randrange(self.height - char_height - 1)
+                x = random.randrange(self.width - char_width)
+                y = random.randrange(self.height - char_height)
                 box = (x, y, x + char_width, y + char_height)
-
-            # skip invalid placement
-            if box[2] >= self.width or box[3] >= self.height:
-                continue
 
             self.boxes.append(box)
 
@@ -177,6 +175,7 @@ class Sample_IMG():
             obj = Element("object")
             annotation.append(obj)
             SubElement(obj, "name").text = ch_info[1]
+            SubElement(obj, "fontsize").text = str(ch_info[2])
             bndbox = Element("bndbox")
             obj.append(bndbox)
 
@@ -188,7 +187,7 @@ class Sample_IMG():
             SubElement(bndbox, "ymax").text = str(height)
 
         indent(annotation)
-        ElementTree(annotation).write(os.path.join(output_path, 'annotations', '%d.xml' % idx), encoding='utf-8')
+        ElementTree(annotation).write(os.path.join(output_path, 'annotation', '%d.xml' % idx), encoding='utf-8')
 
     def prn(self, chDataset=None, idx=None, output_path=None):
         '''
@@ -205,7 +204,10 @@ class Sample_IMG():
 
         # base_font = ImageFont.truetype('/Library/Fonts/AppleGothic.ttf', 10)
         if chDataset is not None:
-            im = Image.new('RGB', (800, 600), color=(256, 256, 256))
+            # im = Image.new('RGB', (800, 600), color=(256, 256, 256))
+            bg_name = chDataset.bg_list[idx % len(chDataset.bg_list)]
+            im = Image.open(bg_name)
+
             draw = ImageDraw.Draw(im)
             for box, char_info in zip(self.boxes, self.chars):
                 font = char_info[0]
@@ -226,13 +228,13 @@ class Sample_IMG():
                     ch_box = (box[0] + width_offset, box[1], box[0] + width_offset + ch_width, box[1] + ch_height)
                     # draw.rectangle(ch_box, outline=(0, 256, 0))
                     width_offset += ch_width
-                    char_list.append((ch_box, ch))
+                    char_list.append((ch_box, ch, font_size))
 
             if idx is None or output_path is None:
                 import uuid
-                filename = '%s.png' % uuid.uuid4()
+                filename = '%s.jpg' % uuid.uuid4()
             else:
-                filename = join(output_path, 'images', '%d.png' % idx)
+                filename = join(output_path, 'images', '%d.jpg' % idx)
             im.save(filename)
 
             self.makeXML(char_list, filename, idx=idx, output_path=output_path)
@@ -265,17 +267,29 @@ class Sample_IMG():
         return sampleImg
 
 class CH_Dataset():
-    def __init__(self, font_path=None):
+    def __init__(self, font_path=None, bg_path=None):
+
         self.char_list = [chr(begin + idx) for idx in range(end - begin + 1)] \
                          + [x for x in (ascii_lowercase + ascii_uppercase)] + [str(x) for x in range(10)] + [x for x in
                                                                                                              '~!@#$%^&*()_+-=<>?,.;:[]{}|']
+        self.char_list = self.char_list[:1000]
 
-        #self.char_list = self.char_list[:1000]
+        #with open('labels.txt', 'r+t', encoding='utf-8') as rf:
+        #    content = rf.readlines()
+        #self.char_list = [x.strip() for x in content] + [str(x) for x in range(10)]
+
         self.font_list = [join(font_path, f) for f in listdir(font_path) if
                           isfile(join(font_path, f)) and f.find('.DS_Store') == -1]
 
         self.font_sizes = [10] * 5 + [20] * 10 + [30] * 7 + [50] * 5 + [100] * 2
+        # self.font_sizes = [x for x in range(20,31)] * 80
 
+        self.bg_list = [join(bg_path, f) for f in listdir(bg_path) if
+                        isfile(join(bg_path, f)) and f.find('.DS_Store') == -1]
+
+        print('# of chars: {}'.format(len(self.char_list)))
+        print('# of fonts: {}'.format(len(self.font_list)))
+        print('# of background imgs: {}'.format(len(self.bg_list)))
         print('total # of chars', len(self.char_list) * len(self.font_list) * len(self.font_sizes))
 
         self.counter = 0
@@ -377,16 +391,26 @@ class CH_Dataset():
                 os.makedirs(output_path)
             if not os.path.exists(join(output_path, 'images')):
                 os.makedirs(join(output_path, 'images'))
-            if not os.path.exists(join(output_path, 'annotations')):
-                os.makedirs(join(output_path, 'annotations'))
+            if not os.path.exists(join(output_path, 'annotation')):
+                os.makedirs(join(output_path, 'annotation'))
 
         output_idx = 0
         while self.hasMoreData() is True:
+            bg_name = self.bg_list[output_idx % len(self.bg_list)]
+            im = Image.open(bg_name)
+            width, height = im.size
+            n_char = math.floor(width / 100) - 1
+
             gen_img = Sample_IMG.generate(self, n_char=n_char, fill_ratio=fill_ratio, width=width, height=height)
             if gen_img:
                 total_chars += gen_img.prn(chDataset=self, idx=output_idx, output_path=output_path)
                 results.append(gen_img)
                 output_idx += 1
+
+                if not (output_idx % 100):
+                    print("Image #: {} created".format(output_idx))
+
+        print("Total # of images: ", output_idx)
 
         NUMBER_OF_IMAGES = output_idx
         # split train/val/test set
@@ -394,9 +418,9 @@ class CH_Dataset():
         random.shuffle(shuffled_index)
 
         # splitting train/validation/test set (unit: %)
-        TRAIN_SET = 80
-        VALID_SET = 10
-        TEST_SET = 10
+        TRAIN_SET = 98
+        VALID_SET = 1
+        TEST_SET = 1
         num_train = int(NUMBER_OF_IMAGES * TRAIN_SET / (TRAIN_SET + VALID_SET + TEST_SET))
         num_valid = int(NUMBER_OF_IMAGES * VALID_SET / (TRAIN_SET + VALID_SET + TEST_SET))
         num_test = NUMBER_OF_IMAGES - num_train - num_valid
@@ -409,7 +433,7 @@ class CH_Dataset():
             for index in shuffled_index[num_train:num_train + num_valid]:
                 wf.write(str(index) + '\n')
 
-        with open(join(output_path, 'trainval.txt'), "w") as wf:
+        with open(join(output_path, "trainval.txt"), "w") as wf:
             for index in shuffled_index[0:num_train + num_valid]:
                 wf.write(str(index) + '\n')
 
@@ -418,8 +442,8 @@ class CH_Dataset():
                 wf.write(str(index) + '\n')
 
         with open(join(output_path, 'labels.txt'), "w") as wf:
-            for label in self.char_list:
-                wf.write(str(label) + '\n')
+            for char in self.char_list:
+                wf.write(str(char) + '\n')
 
         print("Train / Valid / Test : {} / {} / {}".format(num_train, num_valid, num_test))
         print("Output path: {}".format(output_path))
@@ -427,5 +451,5 @@ class CH_Dataset():
         return results
 
 
-chd = CH_Dataset(font_path='fonts')
+chd = CH_Dataset(font_path='fonts', bg_path='backgrounds')
 chd.generateSamples(output_path='data/fontdataset')

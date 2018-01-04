@@ -20,7 +20,7 @@ case ${DATASET} in
     TEST_IMDB="fontdataset_test"
     STEPSIZE="[350000]"
     ITERS=490000
-    ANCHORS="[4,8,16,32]"
+    ANCHORS="[2,3,4,5,6,8,16,32]"
     RATIOS="[0.5,1,2]"
     ;;
   pascal_voc)
@@ -90,4 +90,9 @@ if [ ! -f ${NET_FINAL}.index ]; then
   fi
 fi
 
-./experiments/scripts/test_faster_rcnn.sh $@
+#./experiments/scripts/test_faster_rcnn.sh $@
+
+./experiments/scripts/demo_fontdataset.sh 0 > demo_11000char_result.txt
+
+
+sudo poweroff

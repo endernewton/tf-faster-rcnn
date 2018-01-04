@@ -93,10 +93,13 @@ def vis_detections(pil_im, class_name, dets, thresh=0.5):
     del draw
     return boxes
 
+
 def calc_fontsize(bbox):
     size_remap = {0: 0, 10: 10, 20: 20, 30: 30, 40: 50, 50: 50, 60: 50, 80: 100, 90: 100, 100: 100, 110: 100, 120: 100}
     fontsize = np.maximum(bbox[2] - bbox[0], bbox[3] - bbox[1])
-    return size_remap[int(fontsize / 10) * 10]
+    fontsize = int(fontsize / 10) * 10
+    fontsize = 100 if fontsize > 100 else fontsize
+    return size_remap[fontsize] if fontsize in size_remap else fontsize
 
 def compare_founding(found_boxes, answer, ovthresh=0.5):
     '''
@@ -298,7 +301,7 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError
     net.create_architecture("TEST", imdb.num_classes,
-                          tag='default', anchor_scales=[8, 16, 32])
+                          tag='default', anchor_scales=[2,3,4,5,6,8, 16, 32])
     saver = tf.train.Saver()
     saver.restore(sess, tfmodel)
 
@@ -312,7 +315,7 @@ if __name__ == '__main__':
 
     with open(index_file, 'r') as f:
         lines = f.readlines()
-        im_names = [x.strip() + '.png' for x in lines]
+        im_names = [x.strip() + '.jpg' for x in lines]
 
     num_matching_sum = 0
     num_answer_sum = 0

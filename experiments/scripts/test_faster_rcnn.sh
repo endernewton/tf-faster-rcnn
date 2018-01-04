@@ -20,7 +20,7 @@ case ${DATASET} in
     TEST_IMDB="fontdataset_test"
     STEPSIZE="[350000]"
     ITERS=490000
-    ANCHORS="[4,8,16,32]"
+    ANCHORS="[2,3,4,5,6,8,16,32]"
     RATIOS="[0.5,1,2]"
     ;;
   pascal_voc)
