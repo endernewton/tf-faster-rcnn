@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import print_function
 
 import _init_paths
-from model.config import cfg
+from model.config import cfg, cfg_from_list
 from model.test import im_detect
 from model.nms_wrapper import nms
 
@@ -254,6 +254,11 @@ def parse_args():
                         default='demo')
     parser.add_argument('--model', dest='model', help='Trained model file name',
                         default=' ')
+
+    parser.add_argument('--set', dest='set_cfgs',
+                        help='set config keys', default=None,
+                        nargs=argparse.REMAINDER)
+
     args = parser.parse_args()
 
     return args
@@ -269,6 +274,9 @@ def merge_dict(a, b):
 if __name__ == '__main__':
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
     args = parse_args()
+
+    if args.set_cfgs is not None:
+        cfg_from_list(args.set_cfgs)
 
     # model path
     demonet = args.demo_net
