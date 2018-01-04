@@ -187,7 +187,7 @@ class Sample_IMG():
             SubElement(bndbox, "ymax").text = str(height)
 
         indent(annotation)
-        ElementTree(annotation).write(os.path.join(output_path, 'annotation', '%d.xml' % idx), encoding='utf-8')
+        ElementTree(annotation).write(os.path.join(output_path, 'annotations', '%d.xml' % idx), encoding='utf-8')
 
     def prn(self, chDataset=None, idx=None, output_path=None):
         '''
