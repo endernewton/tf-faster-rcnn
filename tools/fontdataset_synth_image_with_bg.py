@@ -391,8 +391,8 @@ class CH_Dataset():
                 os.makedirs(output_path)
             if not os.path.exists(join(output_path, 'images')):
                 os.makedirs(join(output_path, 'images'))
-            if not os.path.exists(join(output_path, 'annotation')):
-                os.makedirs(join(output_path, 'annotation'))
+            if not os.path.exists(join(output_path, 'annotations')):
+                os.makedirs(join(output_path, 'annotations'))
 
         output_idx = 0
         while self.hasMoreData() is True:
