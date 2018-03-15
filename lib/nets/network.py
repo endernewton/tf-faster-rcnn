@@ -106,19 +106,19 @@ class Network(object):
 
   def _proposal_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
-      # rois, rpn_scores = proposal_layer_tf(
-      #   rpn_cls_prob,
-      #   rpn_bbox_pred,
-      #   self._im_info,
-      #   self._mode,
-      #   self._feat_stride,
-      #   self._anchors,
-      #   self._num_anchors
-      # )
-      rois, rpn_scores = tf.py_func(proposal_layer,
-                              [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
-                               self._feat_stride, self._anchors, self._num_anchors],
-                              [tf.float32, tf.float32], name="proposal")
+      rois, rpn_scores = proposal_layer_tf(
+        rpn_cls_prob,
+        rpn_bbox_pred,
+        self._im_info,
+        self._mode,
+        self._feat_stride,
+        self._anchors,
+        self._num_anchors
+      )
+      # rois, rpn_scores = tf.py_func(proposal_layer,
+      #                         [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
+      #                          self._feat_stride, self._anchors, self._num_anchors],
+      #                         [tf.float32, tf.float32], name="proposal")
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
 

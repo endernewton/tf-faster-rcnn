@@ -53,6 +53,7 @@ def proposal_layer(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_stride, 
 
   return blob, scores
 
+
 def proposal_layer_tf(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_stride, anchors, num_anchors):
   if type(cfg_key) == bytes:
     cfg_key = cfg_key.decode('utf-8')
@@ -67,9 +68,9 @@ def proposal_layer_tf(rpn_cls_prob, rpn_bbox_pred, im_info, cfg_key, _feat_strid
   proposals = bbox_transform_inv_tf(anchors, rpn_bbox_pred)
   proposals = clip_boxes_tf(proposals, im_info[:2])
 
-  indices = tf.image.non_max_suppression(rpn_bbox_pred, scores, max_output_size=post_nms_topN, iou_threshold=nms_thresh)
+  indices = tf.image.non_max_suppression(proposals, scores, max_output_size=post_nms_topN, iou_threshold=nms_thresh)
 
-  boxes = tf.gather(rpn_bbox_pred, indices)
+  boxes = tf.gather(proposals, indices)
   boxes = tf.to_float(boxes)
   scores = tf.gather(scores, indices)
   scores = tf.reshape(scores, shape=(-1, 1))
