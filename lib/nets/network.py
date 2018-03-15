@@ -16,7 +16,7 @@ import numpy as np
 
 from layer_utils.snippets import generate_anchors_pre, generate_anchors_tf
 from layer_utils.proposal_layer import proposal_layer, proposal_layer_tf
-from layer_utils.proposal_top_layer import proposal_top_layer
+from layer_utils.proposal_top_layer import proposal_top_layer, proposal_top_layer_tf
 from layer_utils.anchor_target_layer import anchor_target_layer
 from layer_utils.proposal_target_layer import proposal_target_layer
 from utils.visualization import draw_bounding_boxes
@@ -87,10 +87,18 @@ class Network(object):
 
   def _proposal_top_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
-      rois, rpn_scores = tf.py_func(proposal_top_layer,
-                                    [rpn_cls_prob, rpn_bbox_pred, self._im_info,
-                                     self._feat_stride, self._anchors, self._num_anchors],
-                                    [tf.float32, tf.float32], name="proposal_top")
+      rois, rpn_scores = proposal_top_layer_tf(
+        rpn_cls_prob,
+        rpn_bbox_pred,
+        self._im_info,
+        self._feat_stride,
+        self._anchors,
+        self._num_anchors
+      )
+      # rois, rpn_scores = tf.py_func(proposal_top_layer,
+      #                               [rpn_cls_prob, rpn_bbox_pred, self._im_info,
+      #                                self._feat_stride, self._anchors, self._num_anchors],
+      #                               [tf.float32, tf.float32], name="proposal_top")
       rois.set_shape([cfg.TEST.RPN_TOP_N, 5])
       rpn_scores.set_shape([cfg.TEST.RPN_TOP_N, 1])
 
@@ -98,15 +106,19 @@ class Network(object):
 
   def _proposal_layer(self, rpn_cls_prob, rpn_bbox_pred, name):
     with tf.variable_scope(name) as scope:
-      rois, rpn_scores = proposal_layer_tf(
-        rpn_cls_prob,
-        rpn_bbox_pred,
-        self._im_info,
-        self._mode,
-        self._feat_stride,
-        self._anchors,
-        self._num_anchors
-      )
+      # rois, rpn_scores = proposal_layer_tf(
+      #   rpn_cls_prob,
+      #   rpn_bbox_pred,
+      #   self._im_info,
+      #   self._mode,
+      #   self._feat_stride,
+      #   self._anchors,
+      #   self._num_anchors
+      # )
+      rois, rpn_scores = tf.py_func(proposal_layer,
+                              [rpn_cls_prob, rpn_bbox_pred, self._im_info, self._mode,
+                               self._feat_stride, self._anchors, self._num_anchors],
+                              [tf.float32, tf.float32], name="proposal")
       rois.set_shape([None, 5])
       rpn_scores.set_shape([None, 1])
 
