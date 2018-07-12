@@ -1,3 +1,5 @@
+# tf-faster-rcnn has been deprecated. For a good and more up-to-date implementation for faste/mask RCNN with multi-gpu support, please see the example in TensorPack here(https://github.com/tensorpack/tensorpack/tree/master/examples/FasterRCNN).
+
 # tf-faster-rcnn
 A Tensorflow implementation of faster RCNN detection framework by Xinlei Chen (xinleic@cs.cmu.edu). This repository is based on the python Caffe implementation of faster RCNN available [here](https://github.com/rbgirshick/py-faster-rcnn).
 
