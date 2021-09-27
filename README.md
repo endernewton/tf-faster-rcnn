@@ -109,8 +109,8 @@ If you find it useful, the ``data/cache`` folder created on my side is also shar
   ./data/scripts/fetch_faster_rcnn_models.sh
   ```
   **Note**: if you cannot download the models through the link, or you want to try more models, you can check out the following solutions and optionally update the downloading script:
-  - Another server [here](http://xinlei.sp.cs.cmu.edu/xinleic/tf-faster-rcnn/).
-  - Google drive [here](https://drive.google.com/open?id=0B1_fAEgxdnvJSmF3YUlZcHFqWTQ).
+  - Another server [here](http:/xinleic.xyz/data/tf-faster-rcnn/).
+  - Google drive [here](https://drive.google.com/drive/folders/0B1_fAEgxdnvJSmF3YUlZcHFqWTQ?resourcekey=0-3IJ2gZLaeRUOBsa26PigQg&usp=sharing).
 
 2. Create a folder and a soft link to use the pre-trained model
   ```Shell
