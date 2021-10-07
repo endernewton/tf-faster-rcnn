@@ -30,6 +30,9 @@ import argparse
 from nets.vgg16 import vgg16
 from nets.resnet_v1 import resnetv1
 
+import matplotlib
+matplotlib.use('Agg')
+
 CLASSES = ('__background__',
            'aeroplane', 'bicycle', 'bird', 'boat',
            'bottle', 'bus', 'car', 'cat', 'chair',
@@ -40,7 +43,7 @@ CLASSES = ('__background__',
 NETS = {'vgg16': ('vgg16_faster_rcnn_iter_70000.ckpt',),'res101': ('res101_faster_rcnn_iter_110000.ckpt',)}
 DATASETS= {'pascal_voc': ('voc_2007_trainval',),'pascal_voc_0712': ('voc_2007_trainval+voc_2012_trainval',)}
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im, class_name, dets, image_name, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
@@ -48,6 +51,7 @@ def vis_detections(im, class_name, dets, thresh=0.5):
 
     im = im[:, :, (2, 1, 0)]
     fig, ax = plt.subplots(figsize=(12, 12))
+    fig.savefig(image_name + '.result.png')
     ax.imshow(im, aspect='equal')
     for i in inds:
         bbox = dets[i, :4]
@@ -97,7 +101,7 @@ def demo(sess, net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(im, cls, dets, thresh=CONF_THRESH)
+        vis_detections(im, cls, dets, image_name, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -152,4 +156,4 @@ if __name__ == '__main__':
         print('Demo for data/demo/{}'.format(im_name))
         demo(sess, net, im_name)
 
-    plt.show()
+    # plt.show()
